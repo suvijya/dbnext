@@ -1,0 +1,12 @@
+**
+!dist/extension.js
+!dist/web/extension.js
+!dist/webview/main.js
+!dist/webview/main.css
+!media/icon.png
+!media/dbnext.svg
+!media/screenshot.png
+!package.json
+!README.md
+!CHANGELOG.md
+!LICENSE

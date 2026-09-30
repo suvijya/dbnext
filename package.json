@@ -1,0 +1,327 @@
+{
+  "name": "dbnext",
+  "displayName": "DBNext – Database Map & ER Diagram",
+  "description": "Instantly understand any project's database. Auto-detects schemas from SQL, Prisma, TypeORM, Drizzle, Sequelize, Mongoose, Django, SQLAlchemy, Rails, Laravel, GORM, JPA/Hibernate, EF Core, Ecto and more, then draws an interactive ER map.",
+  "version": "0.1.0",
+  "publisher": "suvijya",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/suvijya/dbnext.git"
+  },
+  "bugs": {
+    "url": "https://github.com/suvijya/dbnext/issues"
+  },
+  "homepage": "https://github.com/suvijya/dbnext#readme",
+  "galleryBanner": {
+    "color": "#0f172a",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "database",
+    "erd",
+    "er diagram",
+    "schema",
+    "db map",
+    "sql",
+    "postgres",
+    "mysql",
+    "sqlite",
+    "mongodb",
+    "prisma",
+    "typeorm",
+    "drizzle",
+    "sequelize",
+    "mongoose",
+    "django",
+    "sqlalchemy",
+    "rails",
+    "laravel",
+    "gorm",
+    "jpa",
+    "hibernate",
+    "entity framework",
+    "ecto",
+    "dbml",
+    "mermaid"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onWebviewPanel:dbnext.map"
+  ],
+  "main": "./dist/extension.js",
+  "browser": "./dist/web/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "dbnext.openMap",
+        "title": "Open DB Map",
+        "category": "DBNext",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "dbnext.rescan",
+        "title": "Rescan Workspace",
+        "category": "DBNext",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "dbnext.exportMarkdown",
+        "title": "Export DB Map to Markdown (Mermaid)",
+        "category": "DBNext",
+        "icon": "$(markdown)"
+      },
+      {
+        "command": "dbnext.copyMermaid",
+        "title": "Copy Mermaid ER Diagram",
+        "category": "DBNext",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "dbnext.revealInMap",
+        "title": "Show in DB Map",
+        "category": "DBNext",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "dbnext.openSource",
+        "title": "Go to Definition",
+        "category": "DBNext",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "dbnext.showLog",
+        "title": "Show Scan Log",
+        "category": "DBNext"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "dbnext",
+          "title": "DB Map",
+          "icon": "media/dbnext.svg"
+        }
+      ]
+    },
+    "views": {
+      "dbnext": [
+        {
+          "id": "dbnext.schema",
+          "name": "Schema",
+          "icon": "media/dbnext.svg",
+          "contextualTitle": "DB Map"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "dbnext.schema",
+        "contents": "Open a folder or repository and DBNext will map its databases automatically.\n[Open Folder](command:vscode.openFolder)",
+        "when": "workbenchState == empty"
+      },
+      {
+        "view": "dbnext.schema",
+        "contents": "Scanning the workspace for database schemas…",
+        "when": "workbenchState != empty && dbnext.state == scanning"
+      },
+      {
+        "view": "dbnext.schema",
+        "contents": "No database schema was detected in this workspace.\nDBNext understands SQL/migrations, DBML, Prisma, TypeORM, MikroORM, Drizzle, Sequelize, Mongoose, Knex, Kysely, Django, SQLAlchemy/Alembic, SQLModel, Rails, Laravel, Doctrine, GORM, JPA/Hibernate, EF Core, Ecto and Diesel.\n[Rescan Workspace](command:dbnext.rescan)\n[Show Scan Log](command:dbnext.showLog)",
+        "when": "workbenchState != empty && dbnext.state == empty"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "dbnext.openMap",
+          "when": "view == dbnext.schema",
+          "group": "navigation@1"
+        },
+        {
+          "command": "dbnext.rescan",
+          "when": "view == dbnext.schema",
+          "group": "navigation@2"
+        },
+        {
+          "command": "dbnext.exportMarkdown",
+          "when": "view == dbnext.schema",
+          "group": "navigation@3"
+        },
+        {
+          "command": "dbnext.copyMermaid",
+          "when": "view == dbnext.schema",
+          "group": "export@1"
+        },
+        {
+          "command": "dbnext.showLog",
+          "when": "view == dbnext.schema",
+          "group": "export@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "dbnext.revealInMap",
+          "when": "view == dbnext.schema && viewItem == entity",
+          "group": "inline@1"
+        },
+        {
+          "command": "dbnext.openSource",
+          "when": "view == dbnext.schema && viewItem =~ /^(entity|column|enum|engineEvidence)$/",
+          "group": "inline@2"
+        },
+        {
+          "command": "dbnext.revealInMap",
+          "when": "view == dbnext.schema && viewItem == entity",
+          "group": "navigation@1"
+        },
+        {
+          "command": "dbnext.openSource",
+          "when": "view == dbnext.schema && viewItem =~ /^(entity|column|enum|engineEvidence)$/",
+          "group": "navigation@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "dbnext.revealInMap",
+          "when": "false"
+        },
+        {
+          "command": "dbnext.openSource",
+          "when": "false"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "DBNext",
+      "properties": {
+        "dbnext.autoOpen": {
+          "type": "string",
+          "enum": [
+            "firstTime",
+            "always",
+            "never"
+          ],
+          "enumDescriptions": [
+            "Open the DB Map automatically the first time a schema is found in a workspace.",
+            "Open the DB Map automatically every time a workspace with a schema is opened.",
+            "Never open the DB Map automatically."
+          ],
+          "default": "firstTime",
+          "description": "When to open the DB Map automatically after the workspace is scanned."
+        },
+        "dbnext.inferRelations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Infer relationships from naming conventions (for example `user_id` → `users.id`) when no explicit foreign key exists. Inferred relations are drawn with dashed lines."
+        },
+        "dbnext.exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Additional glob patterns to exclude from scanning (for example `**/fixtures/**`)."
+        },
+        "dbnext.disabledSources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "sql",
+              "dbml",
+              "diesel",
+              "prisma",
+              "typeorm",
+              "mikroorm",
+              "drizzle",
+              "sequelize",
+              "mongoose",
+              "knex",
+              "kysely",
+              "django",
+              "sqlalchemy",
+              "sqlmodel",
+              "rails",
+              "laravel",
+              "doctrine",
+              "gorm",
+              "jpa",
+              "efcore",
+              "ecto"
+            ]
+          },
+          "default": [],
+          "description": "Schema sources to ignore while scanning."
+        },
+        "dbnext.maxFiles": {
+          "type": "number",
+          "default": 5000,
+          "minimum": 100,
+          "description": "Maximum number of source files to inspect per scan."
+        },
+        "dbnext.maxFileSizeKB": {
+          "type": "number",
+          "default": 2048,
+          "minimum": 16,
+          "description": "Files larger than this (in KB) are skipped."
+        },
+        "dbnext.watch": {
+          "type": "boolean",
+          "default": true,
+          "description": "Update the DB Map automatically when schema files change."
+        },
+        "dbnext.statusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the DB Map summary in the status bar."
+        },
+        "dbnext.export.path": {
+          "type": "string",
+          "default": "DBMAP.md",
+          "description": "Workspace-relative path of the Markdown file written by “Export DB Map to Markdown”."
+        },
+        "dbnext.export.autoUpdate": {
+          "type": "boolean",
+          "default": false,
+          "description": "Rewrite the Markdown DB map file automatically after every scan (only if it already exists or was exported once)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "build:prod": "node esbuild.mjs --production",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit -p . && tsc --noEmit -p src/webview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "node esbuild.mjs && node test/integration/runTest.mjs",
+    "vscode:prepublish": "node esbuild.mjs --production",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@dagrejs/dagre": "3.1.1",
+    "@types/node": "22.20.4",
+    "@types/vscode": "1.80.0",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.2"
+  }
+}
