@@ -13,6 +13,13 @@ export interface SchemaParser {
   readonly kind: SourceKind;
   /** Lower-case file extensions this parser may handle, with the dot: `['.ts', '.js']`. */
   readonly extensions: readonly string[];
+  /**
+   * Optional workspace-relative globs that restrict which files are searched for this parser, for
+   * generic formats that would otherwise pull in every file of that type (e.g. Liquibase only wants
+   * `**∕*changelog*.xml`, not every XML file). When omitted, every file with a listed extension is a
+   * candidate. The extension check still applies.
+   */
+  readonly filePatterns?: readonly string[];
   /** Cheap pre-check on path and text (e.g. `text.includes('@Entity')`). Runs on every candidate file. */
   detect(file: SourceFile): boolean;
   /** Parses the file. Return partial results + warnings instead of throwing. */

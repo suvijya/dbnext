@@ -29,13 +29,20 @@ export const SOURCE_KINDS = [
   'django',
   'sqlalchemy',
   'sqlmodel',
+  'peewee',
+  'tortoise',
   'rails',
   'laravel',
   'doctrine',
   'gorm',
+  'ent',
+  'bun',
   'jpa',
+  'exposed',
+  'liquibase',
   'efcore',
   'ecto',
+  'seaorm',
 ] as const;
 
 /** Technology a schema definition was read from. Also used by the `dbnext.disabledSources` setting. */
@@ -56,13 +63,20 @@ export const SOURCE_LABELS: Readonly<Record<SourceKind, string>> = {
   django: 'Django',
   sqlalchemy: 'SQLAlchemy',
   sqlmodel: 'SQLModel',
+  peewee: 'Peewee',
+  tortoise: 'Tortoise ORM',
   rails: 'Rails',
   laravel: 'Laravel',
   doctrine: 'Doctrine',
   gorm: 'GORM',
+  ent: 'Ent',
+  bun: 'Bun',
   jpa: 'JPA / Hibernate',
+  exposed: 'Exposed',
+  liquibase: 'Liquibase',
   efcore: 'EF Core',
   ecto: 'Ecto',
+  seaorm: 'SeaORM',
 };
 
 export const ENGINE_IDS = [
@@ -173,9 +187,14 @@ export interface Column {
   /** The column stores a list / array of values. */
   isArray?: boolean;
   source?: SourceRef;
-  /** Set by the resolver: id of the enum this column's type refers to. */
+  /**
+   * Id of the enum this column uses (set by the resolver, which matches the column type against
+   * enum names). Parsers MAY set it to the NAME of an enum they emit (e.g. an inline enum
+   * `users_status` declared as a RawEnum) when the type itself does not name the enum; the resolver
+   * then replaces it with the enum id, or removes it when no such enum exists.
+   */
   enumRef?: string;
-  /** Set by the resolver: what this column points to when it is (part of) a foreign key. */
+  /** Set by the resolver (parsers must not set it): what this column points to when it is (part of) a foreign key. */
   references?: ColumnRef;
 }
 
@@ -348,10 +367,39 @@ export interface RawEntity {
   partial?: boolean;
   /** Abstract base / mixin / mapped superclass: not a table itself, its columns are inherited. */
   abstract?: boolean;
-  /** Base class / model names. Columns of *abstract* bases are copied into this entity. */
+  /**
+   * Base class / model names (same source kind). Columns of *abstract* bases are copied into this
+   * entity; relations declared on abstract bases are copied too.
+   */
   extends?: string[];
+  /**
+   * Single-table inheritance (Rails STI, JPA default strategy): when `extends[0]` resolves to a
+   * concrete (non-abstract) entity of the same source kind, this class is stored in that entity's
+   * table and everything declared here merges into it. Otherwise it is a table of its own.
+   */
+  sharedTable?: boolean;
+  /**
+   * Maybe-entity: kept only if confirmed by a non-candidate raw entity of the same source kind with
+   * the same `modelName` (e.g. EF Core `DbSet<Blog>`, GORM `AutoMigrate(&User{})`), or if it is the
+   * `to.model` of a relation declared by a kept entity of the same kind (navigation properties).
+   * Relations declared by dropped candidates are dropped too.
+   */
+  candidate?: boolean;
 }
 
+/**
+ * A relationship as declared in one file.
+ *
+ * Direction: `from` is the entity that HOLDS the foreign key and `to` the referenced one
+ * (`posts.author_id → users.id` is `from: posts, to: users`), for `many-to-one` and `one-to-one`.
+ * Parsers may declare it from either side: a Rails `has_one :profile` inside `User` is emitted as
+ * `from: {model: 'Profile'}, fromColumns: ['user_id'], to: {model: 'User'}`.
+ *
+ * `one-to-many` is accepted for convenience (e.g. `has_many`, `@OneToMany`, `hasMany`): then `from`
+ * is the parent ("one" side), `to` the child ("many" side), `toColumns` the foreign key columns on the
+ * child and `fromColumns` the referenced key of the parent. The resolver flips it into `many-to-one`.
+ * Relations declared on both sides are de-duplicated by the resolver.
+ */
 export interface RawRelation {
   from: EntityRef;
   /** Columns of `from` that hold the foreign key. May be empty when unknown (the resolver guesses). */
@@ -359,7 +407,6 @@ export interface RawRelation {
   to: EntityRef;
   /** Referenced columns of `to`. May be empty (the resolver uses the primary key). */
   toColumns: string[];
-  /** `one-to-many` is accepted for convenience and flipped into `many-to-one` by the resolver. */
   cardinality: Cardinality | 'one-to-many';
   kind: 'foreign-key' | 'orm';
   name?: string;
@@ -369,6 +416,14 @@ export interface RawRelation {
   through?: EntityRef;
   /** The foreign key is nullable. When omitted it is derived from the `from` columns. */
   optional?: boolean;
+  /**
+   * `to` is an owned / embedded value type stored inside `from`'s table (EF Core `OwnsOne` /
+   * `OwnsMany`, JPA `@Embedded`): it is not a table, so a candidate entity of that model is dropped
+   * and relations pointing at it are ignored. Set on a relation with `cardinality` of your choice.
+   */
+  owned?: boolean;
+  /** ORM only: name of the navigation property / field that declares the association on `from`'s class. */
+  navigation?: string;
   source: SourceRef;
 }
 
@@ -389,7 +444,17 @@ export type ColumnPatch = Partial<
 /**
  * Schema changes found in migrations / DDL, applied in file order and, inside a file, in line order
  * (together with the entities, relations and enums of the same file).
- * Adding columns is expressed with a `partial` RawEntity instead of an op.
+ *
+ * Adding columns is expressed with a `partial` RawEntity. Changing attributes of EXISTING columns
+ * (`ALTER COLUMN … SET NOT NULL`, `change_column_null`, `COMMENT ON COLUMN`, `ADD PRIMARY KEY (id)`,
+ * fluent `IsRequired()`) must use `alterColumn`, because a partial column's defaults (nullable…)
+ * cannot be told apart from explicit values.
+ *
+ * In `definition` files destructive ops (drop / rename table, drop column / foreign key, enum ops)
+ * only affect entities created by the same file (so a `reset.sql` next to `schema.sql` does not
+ * erase it). Column mapping ops (`alterColumn`, `renameColumn`) may target entities of any
+ * definition file (e.g. EF Core fluent `HasColumnName` in a DbContext); they are retried after all
+ * definition files have been merged when their target is not known yet.
  */
 export type SchemaOp =
   | { op: 'dropTable'; table: EntityRef; source: SourceRef }
@@ -398,7 +463,9 @@ export type SchemaOp =
   | { op: 'renameColumn'; table: EntityRef; column: string; to: string; source: SourceRef }
   | { op: 'alterColumn'; table: EntityRef; column: string; set: ColumnPatch; source: SourceRef }
   /** Removes foreign keys of `table`, matched by constraint `name`, by `columns`, or by target `to`. */
-  | { op: 'dropForeignKey'; table: EntityRef; name?: string; columns?: string[]; to?: EntityRef; source: SourceRef };
+  | { op: 'dropForeignKey'; table: EntityRef; name?: string; columns?: string[]; to?: EntityRef; source: SourceRef }
+  | { op: 'dropEnum'; name: string; schema?: string; source: SourceRef }
+  | { op: 'renameEnum'; name: string; schema?: string; to: string; source: SourceRef };
 
 export interface EngineHint {
   engine: EngineId;

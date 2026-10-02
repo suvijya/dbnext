@@ -141,8 +141,13 @@
       },
       {
         "view": "dbnext.schema",
-        "contents": "No database schema was detected in this workspace.\nDBNext understands SQL/migrations, DBML, Prisma, TypeORM, MikroORM, Drizzle, Sequelize, Mongoose, Knex, Kysely, Django, SQLAlchemy/Alembic, SQLModel, Rails, Laravel, Doctrine, GORM, JPA/Hibernate, EF Core, Ecto and Diesel.\n[Rescan Workspace](command:dbnext.rescan)\n[Show Scan Log](command:dbnext.showLog)",
+        "contents": "No database schema was detected in this workspace.\nDBNext understands SQL/migrations, DBML, Prisma, TypeORM, MikroORM, Drizzle, Sequelize, Mongoose, Knex, Kysely, Django, SQLAlchemy/Alembic, SQLModel, Rails, Laravel, Doctrine, GORM, JPA/Hibernate, Liquibase, EF Core, Ecto and Diesel.\n[Rescan Workspace](command:dbnext.rescan)\n[Show Scan Log](command:dbnext.showLog)",
         "when": "workbenchState != empty && dbnext.state == empty"
+      },
+      {
+        "view": "dbnext.schema",
+        "contents": "The database scan failed.\n[Show Scan Log](command:dbnext.showLog)\n[Rescan Workspace](command:dbnext.rescan)",
+        "when": "workbenchState != empty && dbnext.state == error"
       }
     ],
     "menus": {
@@ -176,22 +181,22 @@
       "view/item/context": [
         {
           "command": "dbnext.revealInMap",
-          "when": "view == dbnext.schema && viewItem == entity",
+          "when": "view == dbnext.schema && viewItem =~ /^(entity|externalEntity)$/",
           "group": "inline@1"
         },
         {
           "command": "dbnext.openSource",
-          "when": "view == dbnext.schema && viewItem =~ /^(entity|column|enum|engineEvidence)$/",
+          "when": "view == dbnext.schema && viewItem =~ /^(entity|column|enum|engineEvidence|relation|warning)$/",
           "group": "inline@2"
         },
         {
           "command": "dbnext.revealInMap",
-          "when": "view == dbnext.schema && viewItem == entity",
+          "when": "view == dbnext.schema && viewItem =~ /^(entity|externalEntity)$/",
           "group": "navigation@1"
         },
         {
           "command": "dbnext.openSource",
-          "when": "view == dbnext.schema && viewItem =~ /^(entity|column|enum|engineEvidence)$/",
+          "when": "view == dbnext.schema && viewItem =~ /^(entity|column|enum|engineEvidence|relation|warning)$/",
           "group": "navigation@2"
         }
       ],
@@ -256,13 +261,20 @@
               "django",
               "sqlalchemy",
               "sqlmodel",
+              "peewee",
+              "tortoise",
               "rails",
               "laravel",
               "doctrine",
               "gorm",
+              "ent",
+              "bun",
               "jpa",
+              "exposed",
+              "liquibase",
               "efcore",
-              "ecto"
+              "ecto",
+              "seaorm"
             ]
           },
           "default": [],

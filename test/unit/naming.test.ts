@@ -79,6 +79,17 @@ describe('inflection', () => {
     expect(pluralize('users')).toBe('users');
   });
 
+  it('singularizes plurals ending in -is / -us but keeps singular -us / -sis words', () => {
+    expect(singularize('custom_emojis')).toBe('custom_emoji');
+    expect(singularize('apis')).toBe('api');
+    expect(singularize('menus')).toBe('menu');
+    expect(singularize('skus')).toBe('sku');
+    expect(singularize('kiwis')).toBe('kiwi');
+    for (const w of ['status', 'campus', 'bus', 'virus', 'bonus', 'analysis', 'basis', 'class']) expect(singularize(w), w).toBe(w);
+    expect(singularize('statuses')).toBe('status');
+    expect(singularize('campuses')).toBe('campus');
+  });
+
   it('keeps regular words that merely end in "man"', () => {
     expect(pluralize('human')).toBe('humans');
     expect(pluralize('german')).toBe('germans');

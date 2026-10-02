@@ -164,9 +164,19 @@ const SINGULAR_RULES: readonly Rule[] = [
   [/((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)(sis|ses)$/, '$1sis'],
   [/([ti])a$/, '$1um'],
   [/(n)ews$/, '$1ews'],
-  [/(ss|us|is)$/, '$1'],
+  // Already singular: -ss (class), -sis (analysis). Plurals like `emojis`, `apis`, `menus`, `skus`
+  // must still lose their `s`; genuinely singular `-us` words are listed in SINGULAR_US.
+  [/(ss|sis)$/, '$1'],
   [/s$/, ''],
 ];
+
+/** Singular nouns ending in `-us` (otherwise `menus` → `menu` would turn `campus` into `campu`). */
+const SINGULAR_US = new Set([
+  'abacus', 'apparatus', 'bonus', 'bus', 'cactus', 'campus', 'census', 'chorus', 'circus', 'citrus',
+  'consensus', 'corpus', 'exodus', 'focus', 'fungus', 'genus', 'hiatus', 'impetus', 'lotus', 'minus',
+  'nexus', 'octopus', 'onus', 'plus', 'prospectus', 'radius', 'sinus', 'status', 'stimulus', 'surplus',
+  'syllabus', 'thesaurus', 'torus', 'virus', 'walrus',
+]);
 
 function restoreCase(original: string, inflected: string): string {
   if (original.length > 1 && original === original.toUpperCase() && /[A-Z]/.test(original)) {
@@ -200,6 +210,8 @@ function inflectWord(lower: string, plural: boolean, flavor: 'rails' | 'mongoose
     if (lower === from || lower === to) return to;
     if (lower.endsWith(from) && lower.length > from.length + 2) return lower.slice(0, -from.length) + to;
   }
+  if (!plural && SINGULAR_US.has(lower)) return lower;
+  if (!plural && lower.endsWith('es') && SINGULAR_US.has(lower.slice(0, -2))) return lower.slice(0, -2);
   for (const [re, rep] of plural ? PLURAL_RULES : SINGULAR_RULES) {
     if (re.test(lower)) return lower.replace(re, rep);
   }
@@ -242,12 +254,12 @@ export function shortName(qualified: string): string {
  *
  * | kind                                   | `UserProfile` →            |
  * |----------------------------------------|----------------------------|
- * | rails, laravel, gorm                   | `user_profiles`            |
+ * | rails, laravel, gorm, ent, bun         | `user_profiles`            |
  * | sequelize                              | `UserProfiles`             |
  * | mongoose                               | `userprofiles`             |
  * | typeorm, mikroorm, jpa, doctrine       | `user_profile`             |
  * | django (`appLabel` = `blog`)           | `blog_userprofile`         |
- * | sqlmodel                               | `userprofile`              |
+ * | sqlmodel, peewee, tortoise             | `userprofile`              |
  * | prisma, efcore and everything else     | `UserProfile`              |
  */
 export function defaultTableName(kind: SourceKind, model: string, opts: { appLabel?: string } = {}): string {
@@ -256,6 +268,8 @@ export function defaultTableName(kind: SourceKind, model: string, opts: { appLab
     case 'rails':
     case 'laravel':
     case 'gorm':
+    case 'ent':
+    case 'bun':
       return pluralize(snakeCase(name));
     case 'sequelize':
       return pluralize(name);
@@ -269,6 +283,8 @@ export function defaultTableName(kind: SourceKind, model: string, opts: { appLab
     case 'django':
       return opts.appLabel ? `${opts.appLabel.toLowerCase()}_${name.toLowerCase()}` : name.toLowerCase();
     case 'sqlmodel':
+    case 'peewee':
+    case 'tortoise':
       return name.toLowerCase();
     default:
       return name;

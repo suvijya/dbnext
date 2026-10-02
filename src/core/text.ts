@@ -164,9 +164,18 @@ class Lexer {
     return end;
   }
 
+  /** Offset of the next line break (`\n` or a lone `\r`) at or after `i`, or the text length. */
+  private lineBreak(i: number): number {
+    const t = this.t;
+    for (let j = i; j < this.n; j++) {
+      const c = t.charCodeAt(j);
+      if (c === 10 || c === 13) return j; // a line comment ends at CR or LF, not only at LF
+    }
+    return this.n;
+  }
+
   private lineComment(i: number): number {
-    const e = this.t.indexOf('\n', i);
-    return this.comment(i, e < 0 ? this.n : e);
+    return this.comment(i, this.lineBreak(i));
   }
 
   private blockComment(i: number, open: string, close: string, nested: boolean): number {
@@ -287,8 +296,7 @@ class Lexer {
     while (j < this.n) {
       const c = t[j];
       if (c === '/' && t[j + 1] === '/') {
-        const e = t.indexOf('\n', j);
-        j = e < 0 ? this.n : e;
+        j = this.lineBreak(j);
       } else if (c === '/' && t[j + 1] === '*') {
         const e = t.indexOf('*/', j + 2);
         j = e < 0 ? this.n : e + 2;
@@ -626,7 +634,11 @@ export class LineIndex {
 
   constructor(private readonly text: string) {
     const s = [0];
-    for (let i = 0; i < text.length; i++) if (text.charCodeAt(i) === 10) s.push(i + 1);
+    for (let i = 0; i < text.length; i++) {
+      const c = text.charCodeAt(i);
+      if (c === 10) s.push(i + 1);
+      else if (c === 13 && text.charCodeAt(i + 1) !== 10) s.push(i + 1); // lone CR (old Mac / mixed endings)
+    }
     this.starts = s;
   }
 
@@ -660,7 +672,11 @@ export class LineIndex {
 export function lineOf(text: string, offset: number): number {
   let line = 0;
   const end = Math.min(offset, text.length);
-  for (let i = 0; i < end; i++) if (text.charCodeAt(i) === 10) line++;
+  for (let i = 0; i < end; i++) {
+    const c = text.charCodeAt(i);
+    if (c === 10) line++;
+    else if (c === 13 && text.charCodeAt(i + 1) !== 10) line++;
+  }
   return line;
 }
 
@@ -791,19 +807,38 @@ export class Code {
    */
   closing(open: number): number {
     const m = this.masked;
-    const o = m[open];
-    const c = CLOSERS[o];
-    if (!c) return -1;
-    let depth = 0;
-    for (let i = open; i < m.length; i++) {
+    if (!CLOSERS[m[open]]) return -1;
+    return this.matches()[open];
+  }
+
+  private _matches?: Int32Array;
+
+  /**
+   * Matching closing offset for every opening bracket (-1 when unbalanced), computed once with one
+   * stack per bracket kind. Equivalent to counting depth forward from each opener (only the same
+   * kind counts), but O(n) for the whole file instead of O(n) per call: half-typed files with many
+   * unclosed brackets used to make parsers quadratic.
+   */
+  private matches(): Int32Array {
+    if (this._matches) return this._matches;
+    const m = this.masked;
+    const out = new Int32Array(m.length).fill(-1);
+    const stacks: Record<string, number[]> = { '(': [], '[': [], '{': [], '<': [] };
+    const openOf: Record<string, string> = { ')': '(', ']': '[', '}': '{', '>': '<' };
+    for (let i = 0; i < m.length; i++) {
       const ch = m[i];
-      if (ch === o) depth++;
-      else if (ch === c) {
-        if (o === '<' && (m[i - 1] === '=' || m[i - 1] === '-')) continue;
-        if (--depth === 0) return i;
+      const s = stacks[ch];
+      if (s) {
+        s.push(i);
+        continue;
       }
+      const o = openOf[ch];
+      if (!o) continue;
+      if (ch === '>' && (m[i - 1] === '=' || m[i - 1] === '-')) continue; // arrows
+      const st = stacks[o];
+      if (st.length) out[st.pop()!] = i;
     }
-    return -1;
+    return (this._matches = out);
   }
 
   /**

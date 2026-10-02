@@ -25,7 +25,7 @@ const builds = [
     outfile: 'dist/extension.js',
     platform: 'node',
     format: 'cjs',
-    target: 'node18',
+    target: 'node16',
     external: ['vscode'],
   },
   {

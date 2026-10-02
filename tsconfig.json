@@ -16,6 +16,6 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["src/core/**/*.ts", "src/extension/**/*.ts", "test/unit/**/*.ts", "vitest.config.ts"],
+  "include": ["src/core/**/*.ts", "src/parsers/**/*.ts", "src/extension/**/*.ts", "test/unit/**/*.ts", "test/integration/**/*.ts", "vitest.config.mts"],
   "exclude": ["node_modules", "dist", "src/webview"]
 }
