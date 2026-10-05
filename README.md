@@ -18,8 +18,9 @@ entity-relationship map. You don't need a database connection or any configurati
 - **Relations.** Foreign keys, ORM associations, many-to-many join tables and relations inferred
   from naming conventions (`user_id` → `users.id`, drawn dashed).
 - **Databases detected.** PostgreSQL, MySQL, SQLite, SQL Server, MongoDB, Redis and more, found
-  through docker compose files, dependencies and connection-string examples. Credentials are never
-  read or shown, and real `.env` files are never opened.
+  through docker compose files, dependencies and example config such as `.env.example`. Only image,
+  package and URL-scheme names are shown, never hosts, usernames or passwords, and real `.env` files
+  are never opened.
 - **Sidebar tree.** Databases, tables, columns, relations and enums, with "Go to Definition".
 - **Export.** Write a `DBMAP.md` with a Mermaid ER diagram that GitHub and GitLab render, copy the
   Mermaid source, or save the diagram as SVG.
@@ -75,11 +76,13 @@ DBNext reads source files and never connects to a database. Each file is parsed 
 parser for its technology. The results are merged: migrations are replayed in order, current model
 definitions win over the migration history, and ORM naming conventions decide the real table and
 column names. Everything runs locally inside VS Code and nothing is sent anywhere. The extension
-works in untrusted workspaces and on vscode.dev / github.dev.
+works in untrusted workspaces and also ships a web build for vscode.dev / github.dev (not yet tested
+there).
 
 Since DBNext reads code instead of a live database, a schema that is assembled dynamically at
-runtime may come out incomplete. Run **DBNext: Show Scan Log** to see the files each table came from.
-Issues and sample repositories that map incorrectly are welcome on
+runtime may come out incomplete. The sidebar tree and the map's side panel show where each table is
+defined, and **DBNext: Show Scan Log** lists what was scanned, the technologies found and any
+warnings. Issues and sample repositories that map incorrectly are welcome on
 [GitHub](https://github.com/suvijya/dbnext/issues).
 
 ## License
