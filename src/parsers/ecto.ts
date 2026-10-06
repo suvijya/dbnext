@@ -48,6 +48,23 @@ function parseSchema(file: SourceFile, code: Code): ParseResult {
   const relations: RawRelation[] = [];
   const enums: RawEnum[] = [];
 
+  // All `defmodule` headers, once (looking backwards from every schema re-scanned the whole file
+  // prefix each time, which made large files quadratic).
+  const modules = [...code.stripped.matchAll(/\bdefmodule\s+([\w.]+)\s+do\b/g)].map((m) => ({ at: m.index!, name: m[1] }));
+  const moduleBefore = (at: number) => {
+    let lo = 0;
+    let hi = modules.length - 1;
+    let found: (typeof modules)[number] | undefined;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (modules[mid].at < at) {
+        found = modules[mid];
+        lo = mid + 1;
+      } else hi = mid - 1;
+    }
+    return found;
+  };
+
   for (const sm of code.stripped.matchAll(/\bschema\s+"([^"\n]+)"\s+do\b/g)) {
     const at = sm.index!;
     if (!code.isCode(at)) continue;
@@ -55,9 +72,9 @@ function parseSchema(file: SourceFile, code: Code): ParseResult {
     const line = code.lineAt(at);
     const block = code.indentedBlock(line);
 
-    const mod = [...code.stripped.slice(0, at).matchAll(/\bdefmodule\s+([\w.]+)\s+do\b/g)].pop();
-    const modelName = mod ? shortName(mod[1]) : undefined;
-    const header = code.stripped.slice(mod ? mod.index! : 0, at);
+    const mod = moduleBefore(at);
+    const modelName = mod ? shortName(mod.name) : undefined;
+    const header = code.stripped.slice(mod ? mod.at : 0, at);
     const cfg = schemaConfig(header);
 
     const cols: Column[] = [];
