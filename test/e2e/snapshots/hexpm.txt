@@ -1,0 +1,172 @@
+entities: 62
+  account_deletion_requests [table]: id, user_id, key, primary_email, inserted_at
+  audit_logs [table]: id, user_id, action, params, inserted_at, user_agent, organization_id, remote_ip, key_id, oauth_token_id, user_data, key_data
+  authorization_codes [table]: id, code, redirect_uri, scopes, expires_at, used_at, code_challenge, code_challenge_method, user_id, client_id, inserted_at, updated_at
+  blocked_addresses [table]: id, ip, comment
+  blocked_email_domains [table]: id, domain, comment, inserted_at, updated_at
+  device_codes [table]: id, device_code, user_code, verification_uri, verification_uri_complete, name, client_id, expires_at, interval, status, scopes, user_id, inserted_at, updated_at
+  downloads [table]: id, release_id, downloads, day, package_id
+  email_outbox_entries [table]: id, category, group_key, scope_key, email, expires_at, inserted_at, updated_at, priority, type, recipients, subject, delivered_at, provider_message_id
+  emails [table]: id, email, verified, primary, public, verification_key, user_id, inserted_at, updated_at, gravatar, verification_expiry
+  installs [table]: id, hex, elixirs
+  keys [table]: id, user_id, name, inserted_at, updated_at, secret_first, secret_second, permissions, last_use, organization_id, public, revoke_at
+  oauth_clients [table]: client_id, client_secret, name, client_type, allowed_grant_types, redirect_uris, allowed_scopes, inserted_at, updated_at
+  oauth_tokens [table]: id, jti, refresh_jti, token_type, refresh_token_expires_at, scopes, expires_at, revoked_at, user_id, client_id, grant_type, grant_reference, inserted_at, updated_at, user_session_id, refresh_token_hash, organization_id, granted_scopes
+  organization_domains [table]: id, organization_id, added_by_user_id, domain, verification_token, verified_at, last_checked_at, inserted_at, updated_at
+  organization_invitation_blocks [table]: id, organization_id, user_id, inserted_at, updated_at
+  organization_invitations [table]: id, organization_id, invited_by_user_id, accepted_by_user_id, email, role, token_hash, expires_at, accepted_at, revoked_at, inserted_at, updated_at, user_id, declined_at, sent_at
+  organization_scim_resources [table]: id, connection_id, organization_id, scim_id, external_id, user_name, user_id, invitation_id, inserted_at, updated_at
+  organization_sso_authorizations [table]: id, code_hash, user_id, user_session_id, organization_ids, expires_at, consumed_at, inserted_at, updated_at
+  organization_sso_connections [table]: id, organization_id, configured_by_user_id, issuer, client_id, client_secret, pending_client_secret, discovery_document, jwks_document, discovery_expires_at, jwks_expires_at, metadata_expires_at, version, pending_client_secret_version, tested_at, pending_client_secret_tested_at, enabled_at, inserted_at, updated_at, jit_seat_policy, jit_role, enforcement_mode, required_at, session_lifetime_seconds, personal_keys, scim_token_first, scim_token_second, scim_seat_policy, scim_role, scim_token_generated_by_user_id, scim_token_generated_at, scim_token_used_at, scim_token_used_ip, seat_expansion_failed_at
+  organization_sso_failures [table]: id, connection_id, stage, code, inserted_at, updated_at, user_id
+  organization_sso_identities [table]: id, organization_id, connection_id, user_id, issuer, subject, provider_email, inserted_at, updated_at, last_authenticated_at
+  organization_sso_sessions [table]: id, user_id, organization_id, user_session_id, identity_id, authenticated_at, expires_at, revoked_at, inserted_at, updated_at
+  organization_sso_transactions [table]: id, connection_id, user_id, state_hash, nonce, code_verifier, kind, secret_slot, connection_version, secret_version, redirect_uri, return_path, expires_at, consumed_at, issuer, subject, provider_email, link_token_hash, linked_at, cancelled_at, inserted_at, updated_at, entrypoint, target_user_session_id
+  organization_tfa_notifications [table]: id, organization_id, user_id, revision, stage, inserted_at, updated_at
+  organization_users [table]: id, role, organization_id, user_id, inserted_at, updated_at
+  organizations [table]: id, name, inserted_at, updated_at, billing_active, trial_end, billing_override, billing_seats
+  package_dependants [table]: id, dependency_id, package_id, dependant_repository_id
+  package_downloads [view]: package_id, view, downloads
+  package_owners [table]: id, package_id, user_id, level, inserted_at, updated_at
+  package_report_comments [table]: id, text, author_id, package_report_id, inserted_at, updated_at
+  package_report_releases [table]: id, package_report_id, release_id, inserted_at, updated_at
+  package_reports [table]: id, description, state, package_id, author_id, inserted_at, updated_at
+  packages [table]: id, name, meta, inserted_at, updated_at, docs_updated_at, repository_id
+  password_resets [table]: id, key, primary_email, user_id, inserted_at
+  policies [table]: id, organization_id, name, description, visibility, repositories, inserted_at, updated_at
+  rate_limits [table]: key, count, expires_at
+  release_doc_files [table]: release_id, files, inserted_at, updated_at
+  release_downloads [view]: package_id, release_id, downloads
+  releases [table]: id, package_id, version, inserted_at, updated_at, has_docs, meta, retirement, publisher_id, inner_checksum, outer_checksum
+  repositories [table]: id, name, organization_id, inserted_at, updated_at
+  repository_users [table]: id, role, repository_id, user_id, inserted_at, updated_at
+  requirements [table]: id, release_id, dependency_id, requirement, optional, app
+  reserved_packages [table]: id, name, version, reason, repository_id
+  reserved_usernames [table]: id, name, inserted_at
+  schema_migrations [table]: version, inserted_at
+  secret_findings [table]: id, release_id, package_id, tarball_checksum, rule, file_path, line, byte_offset, fingerprint, preview, inserted_at, updated_at
+  secret_scans [table]: id, release_id, tarball_checksum, finding_count, truncated, notified_at, inserted_at, updated_at
+  security_advisories [table]: id, summary, aliases, published_at, modified_at, withdrawn_at, cvss_vector, cvss_score, cvss_rating
+  security_advisory_affected_packages [table]: advisory_id, package_id
+  security_advisory_affected_releases [table]: advisory_id, release_id
+  security_advisory_affected_versions [table]: id, advisory_id, package_id, requirement
+  security_advisory_references [table]: id, advisory_id, type, url
+  sessions [table]: id, token, data, inserted_at, updated_at
+  short_url_targets [table]: id, url, url_hash, inserted_at, updated_at
+  short_urls [table]: id, url, short_code, inserted_at
+  staged_releases [table]: id, repository_id, name, version, kind, meta, replace, publication, inner_checksum, outer_checksum, storage_key, docs_checksum, docs_storage_key, credential_type, credential_name, user_id, organization_id, key_id, workload_identity_id, oidc_claims, expires_at, audit_data, inserted_at, updated_at, owner_id
+  trusted_publishers [table]: id, package_id, provider, issuer, repository_owner, repository_owner_id, repository_id, repository, workflow, environment, inserted_at, updated_at
+  user_providers [table]: id, user_id, provider, provider_uid, provider_email, provider_data, inserted_at, updated_at
+  user_sessions [table]: id, user_id, type, name, revoked_at, last_use, session_token, client_id, inserted_at, updated_at, expires_at, organization_id
+  users [table]: id, username, password, inserted_at, updated_at, full_name, handles, service, organization_id, deactivated_at, tfa, role, optional_emails
+  varsel_disclosures [table]: id, user_id, inserted_at, updated_at
+  workload_identities [table]: organization_id, role, packages, covers_private, covers_public, public_packages, repositories
+relations: 106
+  account_deletion_requests(user_id) -> users(id) foreign-key one-to-one
+  audit_logs(key_id) -> keys(id) foreign-key many-to-one
+  audit_logs(oauth_token_id) -> oauth_tokens(id) foreign-key many-to-one
+  audit_logs(organization_id) -> organizations(id) foreign-key many-to-one
+  audit_logs(user_id) -> users(id) foreign-key many-to-one
+  authorization_codes(client_id) -> oauth_clients(client_id) foreign-key many-to-one
+  authorization_codes(user_id) -> users(id) foreign-key many-to-one
+  device_codes(client_id) -> oauth_clients(client_id) foreign-key many-to-one
+  device_codes(user_id) -> users(id) foreign-key many-to-one
+  downloads(package_id) -> packages(id) foreign-key many-to-one
+  downloads(release_id) -> releases(id) foreign-key many-to-one
+  emails(user_id) -> users(id) foreign-key one-to-one
+  keys(organization_id) -> organizations(id) foreign-key many-to-one
+  keys(user_id) -> users(id) foreign-key many-to-one
+  oauth_tokens(client_id) -> oauth_clients(client_id) foreign-key many-to-one
+  oauth_tokens(organization_id) -> organizations(id) foreign-key many-to-one
+  oauth_tokens(user_id) -> users(id) foreign-key many-to-one
+  oauth_tokens(user_session_id) -> user_sessions(id) foreign-key many-to-one
+  organization_domains(added_by_user_id) -> users(id) foreign-key many-to-one
+  organization_domains(organization_id) -> organizations(id) foreign-key many-to-one
+  organization_invitation_blocks(organization_id) -> organizations(id) foreign-key many-to-one
+  organization_invitation_blocks(user_id) -> users(id) foreign-key many-to-one
+  organization_invitations(accepted_by_user_id) -> users(id) foreign-key many-to-one
+  organization_invitations(invited_by_user_id) -> users(id) foreign-key many-to-one
+  organization_invitations(organization_id) -> organizations(id) foreign-key many-to-one
+  organization_invitations(user_id) -> users(id) foreign-key many-to-one
+  organization_scim_resources(connection_id) -> organization_sso_connections(id) foreign-key many-to-one
+  organization_scim_resources(invitation_id) -> organization_invitations(id) foreign-key many-to-one
+  organization_scim_resources(organization_id) -> organizations(id) foreign-key many-to-one
+  organization_scim_resources(user_id) -> users(id) foreign-key many-to-one
+  organization_sso_authorizations(user_id) -> users(id) foreign-key many-to-one
+  organization_sso_authorizations(user_session_id) -> user_sessions(id) foreign-key many-to-one
+  organization_sso_connections(configured_by_user_id) -> users(id) foreign-key many-to-one
+  organization_sso_connections(organization_id) -> organizations(id) foreign-key one-to-one
+  organization_sso_connections(scim_token_generated_by_user_id) -> users(id) foreign-key many-to-one
+  organization_sso_failures(connection_id) -> organization_sso_connections(id) foreign-key many-to-one
+  organization_sso_failures(user_id) -> users(id) foreign-key many-to-one
+  organization_sso_identities(connection_id) -> organization_sso_connections(id) foreign-key many-to-one
+  organization_sso_identities(organization_id) -> organizations(id) foreign-key many-to-one
+  organization_sso_identities(user_id) -> users(id) foreign-key many-to-one
+  organization_sso_sessions(identity_id) -> organization_sso_identities(id) foreign-key many-to-one
+  organization_sso_sessions(organization_id) -> organizations(id) foreign-key many-to-one
+  organization_sso_sessions(user_id) -> users(id) foreign-key many-to-one
+  organization_sso_sessions(user_session_id) -> user_sessions(id) foreign-key many-to-one
+  organization_sso_transactions(connection_id) -> organization_sso_connections(id) foreign-key many-to-one
+  organization_sso_transactions(target_user_session_id) -> user_sessions(id) foreign-key many-to-one
+  organization_sso_transactions(user_id) -> users(id) foreign-key many-to-one
+  organization_tfa_notifications(organization_id) -> organizations(id) foreign-key many-to-one
+  organization_tfa_notifications(user_id) -> users(id) foreign-key many-to-one
+  organization_users(organization_id) -> organizations(id) foreign-key many-to-one
+  organization_users(user_id) -> users(id) foreign-key many-to-one
+  organizations(id) -> users(id) foreign-key many-to-many
+  package_dependants(dependant_repository_id) -> repositories(id) foreign-key many-to-one
+  package_dependants(dependency_id) -> packages(id) foreign-key many-to-one
+  package_dependants(package_id) -> packages(id) foreign-key many-to-one
+  package_downloads(package_id) -> packages(id) inferred many-to-one
+  package_owners(package_id) -> packages(id) foreign-key many-to-one
+  package_owners(user_id) -> users(id) foreign-key many-to-one
+  package_report_comments(author_id) -> users(id) foreign-key many-to-one
+  package_report_comments(package_report_id) -> package_reports(id) foreign-key many-to-one
+  package_report_releases(package_report_id) -> package_reports(id) foreign-key many-to-one
+  package_report_releases(release_id) -> releases(id) foreign-key many-to-one
+  package_reports(author_id) -> users(id) foreign-key many-to-one
+  package_reports(id) -> releases(id) foreign-key many-to-many
+  package_reports(package_id) -> packages(id) foreign-key many-to-one
+  packages(repository_id) -> repositories(id) foreign-key many-to-one
+  password_resets(user_id) -> users(id) foreign-key many-to-one
+  policies(organization_id) -> organizations(id) foreign-key many-to-one
+  release_doc_files(release_id) -> releases(id) foreign-key one-to-one
+  release_downloads(package_id) -> packages(id) inferred many-to-one
+  release_downloads(release_id) -> releases(id) inferred one-to-one
+  releases(package_id) -> packages(id) foreign-key many-to-one
+  releases(publisher_id) -> users(id) foreign-key many-to-one
+  repositories(organization_id) -> organizations(id) foreign-key one-to-one
+  repository_users(repository_id) -> repositories(id) foreign-key many-to-one
+  repository_users(user_id) -> users(id) foreign-key many-to-one
+  requirements(dependency_id) -> packages(id) foreign-key many-to-one
+  requirements(release_id) -> releases(id) foreign-key many-to-one
+  reserved_packages(repository_id) -> repositories(id) foreign-key many-to-one
+  secret_findings(package_id) -> packages(id) foreign-key many-to-one
+  secret_findings(release_id) -> releases(id) foreign-key many-to-one
+  secret_scans(release_id) -> releases(id) foreign-key one-to-one
+  security_advisories(id) -> packages(id) foreign-key many-to-many
+  security_advisories(id) -> releases(id) foreign-key many-to-many
+  security_advisory_affected_packages(advisory_id) -> security_advisories(id) foreign-key many-to-one
+  security_advisory_affected_packages(package_id) -> packages(id) foreign-key many-to-one
+  security_advisory_affected_releases(advisory_id) -> security_advisories(id) foreign-key many-to-one
+  security_advisory_affected_releases(release_id) -> releases(id) foreign-key many-to-one
+  security_advisory_affected_versions(advisory_id) -> security_advisories(id) foreign-key many-to-one
+  security_advisory_affected_versions(package_id) -> packages(id) foreign-key many-to-one
+  security_advisory_references(advisory_id) -> security_advisories(id) foreign-key many-to-one
+  staged_releases(key_id) -> keys(id) foreign-key many-to-one
+  staged_releases(organization_id) -> organizations(id) foreign-key many-to-one
+  staged_releases(owner_id) -> organizations(id) foreign-key many-to-one
+  staged_releases(repository_id) -> repositories(id) foreign-key many-to-one
+  staged_releases(user_id) -> users(id) foreign-key many-to-one
+  staged_releases(workload_identity_id) -> workload_identities() foreign-key many-to-one
+  trusted_publishers(package_id) -> packages(id) foreign-key many-to-one
+  trusted_publishers(repository_id) -> repositories(id) inferred many-to-one
+  user_providers(user_id) -> users(id) foreign-key many-to-one
+  user_sessions(client_id) -> oauth_clients(client_id) foreign-key many-to-one
+  user_sessions(organization_id) -> organizations(id) foreign-key many-to-one
+  user_sessions(user_id) -> users(id) foreign-key many-to-one
+  users(organization_id) -> organizations(id) foreign-key one-to-one
+  varsel_disclosures(user_id) -> users(id) foreign-key one-to-one
+  workload_identities(organization_id) -> organizations(id) foreign-key many-to-one
+engines: postgresql
+warnings: 0

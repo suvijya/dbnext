@@ -3,7 +3,7 @@
  * Pure functions over the resolved model; no Node / VS Code / DOM APIs.
  */
 
-import type { Cardinality, Column, Entity, EnumDef, Relation, SchemaModel } from './model';
+import type { Cardinality, Column, Entity, EnumDef, Provenance, Relation, SchemaModel } from './model';
 
 /** `auth.users`, or `users` for the default schema. */
 export function qualifiedName(e: Pick<Entity, 'name' | 'schema'>): string {
@@ -121,4 +121,33 @@ export function describeRelation(r: Relation, perspective: string, nameOf: (id: 
 export function enumSummary(e: EnumDef, max = 6): string {
   const shown = e.values.slice(0, max).join(', ');
   return e.values.length > max ? `${shown}, … (+${e.values.length - max})` : shown;
+}
+
+export const DERIVATION_LABELS: Readonly<Record<Provenance['derivation'], string>> = {
+  declared: 'Declared',
+  orm: 'ORM association',
+  inferred: 'Inferred from naming',
+  guessed: 'Name guessed',
+  implied: 'Implied column',
+  external: 'Not in workspace',
+};
+
+/** Provenance that deserves a visual "this is not certain" marker: anything but declared / ORM-declared with high-medium confidence. */
+export function isUncertain(p: Provenance | undefined): boolean {
+  return !!p && (p.derivation === 'inferred' || p.derivation === 'guessed' || p.derivation === 'implied' || p.derivation === 'external' || p.confidence === 'low');
+}
+
+/** One-line summary such as `Inferred from naming · low confidence · merged`. */
+export function provenanceSummary(p: Provenance): string {
+  return [DERIVATION_LABELS[p.derivation] ?? p.derivation, `${p.confidence} confidence`, ...(p.merged ? ['merged'] : [])].join(' · ');
+}
+
+/** Plain-text lines for a "Why is this here?" tooltip: summary, explanations, then up to 5 source locations. */
+export function provenanceTextLines(p: Provenance): string[] {
+  const lines = [provenanceSummary(p), ...p.notes];
+  if (p.refs.length) {
+    const shown = p.refs.slice(0, 5).map((r) => `${r.file}:${r.line + 1}`);
+    lines.push(`From ${shown.join(', ')}${p.refs.length > 5 ? `, +${p.refs.length - 5} more` : ''}`);
+  }
+  return lines;
 }

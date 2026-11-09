@@ -1,0 +1,293 @@
+entities: 94
+  accounts [table]: id, email
+  apis [table]: id
+  attached_files [table]: id, attach_time, f_id, proc_id
+  bases [table]: id
+  blob_docs [table]: id, content, thumbnail
+  blob_links [table]: created_at, blob_id, link_id, id
+  blobs [table]: id, uuid, count, blob_parent, blob_links, blob_link_blob, blob_link_link
+  blogs [table]: id, oid
+  builders [table]: id
+  car [table]: id, user_car, name
+  cards [table]: id, number, owner_id, create_time, update_time, balance, name, user_card, created_at, in_hook, expired_at, user_cards, type, number_hash, cvv_hash, expires_at, expired, spec_card
+  cars [table]: id, before_id, after_id, model, pet_cars, number, registered_at, user_cars, user_car
+  cities [table]: id, name
+  clean_users [view]: id, name, public_info
+  comments [table]: id, text, post_id, unique_int, unique_float, nillable_int, table, dir, client, post_comments
+  conversions [table]: id, name, int8_to_string, uint8_to_string, int16_to_string, uint16_to_string, int32_to_string, uint32_to_string, int64_to_string, uint64_to_string
+  custom_types [table]: id, custom, tz0, tz3
+  db1.friendships [table]: id, weight, created_at, user_id, friend_id
+  db1.group_users [table]: group_id, user_id
+  db1.groups [table]: id, name
+  db2.pets [table]: id, name, owner_id
+  db3.user_following [table]: user_id, follower_id
+  db3.users [table]: id, name
+  devices [table]: id, device_active_session
+  doc_related [table]: doc_id, related_id
+  docs [table]: id, text, doc_children, doc_related
+  documents [table]: id, name, attachment, payload, content_key, thumbnail_key, attachment_key, metadata_key, payload_key, description_key, archive_key, content, thumbnail, metadata, description, archive
+  ex_value_scans [table]: id, binary, binary_bytes, binary_optional, text, text_optional, base64, custom, custom_optional
+  field_types [table]: id, int, int8, int16, int32, int64, optional_int, optional_int8, optional_int16, optional_int32, optional_int64, nillable_int, nillable_int8, nillable_int16, nillable_int32, nillable_int64, validate_optional_int32, optional_uint, optional_uint8, optional_uint16, optional_uint32, optional_uint64, state, optional_float, optional_float32, text, datetime, decimal, link_other, link_other_func, mac, string_array, password, string_scanner, duration, dir, ndir, str, null_str, link, null_link, active, null_active, deleted, deleted_at, raw_data, sensitive, ip, null_int64, schema_int, schema_int8, schema_int64, schema_float, schema_float32, null_float, role, priority, optional_uuid, nillable_uuid, strings, pair, nil_pair, vstring, triple, big_int, password_other, file_field
+  file_types [table]: id, name, type, state
+  files [table]: id, name, set_id, fsize, user, group, op, field_id, create_time, file_type_files, group_files, user_files, size, deleted, parent_id, process_files, attached_file_fi, file_children
+  friends [table]: user, friend
+  friendships [table]: id, weight, created_at, user_id, friend_id
+  goods [table]: id
+  group_infos [table]: id, desc, max_users, group_info
+  group_tags [table]: id, tag_id, group_id
+  group_users [table]: group_id, user_id
+  groups [table]: id, name, active, expire, type, max_users, group_info, tenant_id, some_field, group_admin, group_tag_group, tag_groups, user_groups, user_group_group
+  infos [table]: id, content
+  int_si_ds [table]: id, int_sid_parent
+  invalid_edges [table]: id
+  invalid_uuids [table]: id, invalid
+  items [table]: id, text
+  licenses [table]: id, create_time, update_time
+  links [table]: id, link_information
+  media [table]: id, source, source_uri, text
+  metadata [table]: id, age, parent_id, metadata_parent, user_metadata
+  mixin_ids [table]: id, some_field, mixin_field
+  nodes [table]: id, value, prev_id, updated_at, node_next, parent_id, node_children
+  notes [table]: id, text, note_children
+  others [table]: id
+  parents [table]: id, by_adoption, user_id, parent_id
+  payments [table]: id, amount, currency, time, description, status, card_id, card_payments
+  pcs [table]: id
+  pet [table]: id, age, name, uuid, nickname, trained, optional_time, user_pets, user_team
+  pet_friends [table]: pet_id, friend_id
+  pet_user_names [view]: name
+  pets [table]: id, pet_best_friend, user_pets, owner_id, delete_time, name, age, licensed_at, weight, best_friend_id, pet_friends, user_team
+  posts [table]: id, text, author_id, user_posts
+  processes [table]: id, attached_file_proc
+  relationship_infos [table]: id, text, relationship_info
+  relationships [table]: weight, user_id, relative_id, info_id, id
+  rentals [table]: id, date, car_id, user_id, car_rentals, user_rentals
+  revisions [table]: id
+  role_users [table]: created_at, role_id, user_id, id
+  roles [table]: id, name, created_at, role_user_role, user_roles
+  session_devices [table]: id, ip_address, user_agent, location, created_at, updated_at
+  sessions [table]: id, device_sessions, active, issued_at, expires_at, token, method, device_id, device_active_session, session_device_sessions
+  spec_card [table]: spec_id, card_id
+  specs [table]: id
+  streets [table]: id, name, city_streets
+  tags [table]: id, value, group_tag_tag, tweet_tag_tag
+  task_teams [table]: task_id, team_id
+  tasks [table]: id, priority, priorities, created_at, name, owner, order, order_option, op, title, description, status, uuid, user_tasks, some_field
+  teams [table]: id, name, some_field, team_mixin_teams
+  tenants [table]: id, name, some_field, tenant_mixin_tenant
+  test_schemas [table]: id, test_schema_one
+  tokens [table]: id, body, account_token
+  tweet_likes [table]: liked_at, tweet_id, user_id, id
+  tweet_tags [table]: id, added_at, tag_id, tweet_id
+  tweets [table]: id, text, tag_tweets, tweet_like_tweet, tweet_tag_tweet, user_liked_tweets, user_tweets, user_tweet_tweet
+  user_audit_logs [table]: id, operation_type, operation_time, old_value, new_value
+  user_following [table]: user_id, follower_id
+  user_friends [table]: user_id, friend_id
+  user_groups [table]: id, joined_at, user_id, group_id
+  user_teams [table]: user_id, team_id
+  user_tweets [table]: id, created_at, user_id, tweet_id
+  users [table]: id, name, user_id, label, oid, user_children, parent_id, spouse_id, optional_int, age, last, nickname, address, phone, password, role, employment, sso_cert, files_count, group_blocked, user_spouse, user_parent, SSOCert, version, worth, active, user_best_friend, t, url, urls, raw, dirs, ints, floats, strings, ints_validate, floats_validate, strings_validate, addr, unknown, description, renamed, old_token, blob, state, status, workplace, drop_optional, mixed_string, mixed_enum, buffer, title, new_token, roles, default_expr, default_exprs, created_at, blog_admins, new_name, some_field, nillable, optional, sensitive, creation_time, uuid, postal_code, location, first_name, last_name, tags, foods, tenant_id, public_info, private_info, group_users, info_user, post_author, friendship_user, friendship_friend, relationship_user, relationship_relative, role_user_user, tweet_like_user, user_friends, user_relatives, user_group_user, user_tweet_user, user_following, hooks_mixin_user, with_mixin_owner, pet_owner, group_admin
+  value_scans [table]: id, name
+  versioned_groups [table]: id, name
+  versioned_users [table]: id, age, name, address
+  with_defaults [table]: id, int, float, string, updated_at, int_default_func, balance, dirs, float_default_func
+  with_mixins [table]: created_at, updated_at, boring, id, field
+  zoos [table]: id
+relations: 195
+  attached_files(f_id) -> files(id) foreign-key many-to-one
+  attached_files(proc_id) -> processes(id) foreign-key many-to-one
+  blob_links(blob_id) -> blobs(id) foreign-key many-to-one
+  blob_links(link_id) -> blobs(id) foreign-key many-to-one
+  blobs(blob_link_blob) -> blob_links(blob_id,link_id,id) orm many-to-one
+  blobs(blob_link_link) -> blob_links(blob_id,link_id,id) orm many-to-one
+  blobs(blob_links) -> blobs(id) orm many-to-one
+  blobs(blob_parent) -> blobs(id) foreign-key one-to-one
+  car(user_car) -> users(oid) foreign-key one-to-one
+  cards(id) -> specs(id) orm many-to-many
+  cards(id) -> users(id,user_id,oid) orm many-to-many
+  cards(owner_id) -> users(id) foreign-key one-to-one
+  cards(spec_card) -> specs(id) orm many-to-one
+  cards(user_card) -> users(id,user_id,oid) foreign-key one-to-one
+  cards(user_cards) -> users(id) foreign-key many-to-one
+  cars(id) -> pets(id) orm many-to-many
+  cars(id) -> users(id,user_id,oid) orm many-to-many
+  cars(pet_cars) -> pets(id) foreign-key many-to-one
+  cars(user_car) -> users(id,user_id,oid) orm many-to-one
+  cars(user_cars) -> users(id) foreign-key many-to-one
+  comments(id) -> posts(id) orm many-to-many
+  comments(post_comments) -> posts(id) orm many-to-one
+  comments(post_id) -> posts(id) foreign-key many-to-one
+  db1.friendships(friend_id) -> db3.users(id) foreign-key many-to-one
+  db1.friendships(user_id) -> db3.users(id) foreign-key many-to-one
+  db1.group_users(group_id) -> db1.groups(id) foreign-key many-to-one
+  db1.group_users(user_id) -> db3.users(id) foreign-key many-to-one
+  db1.groups(id) -> db3.users(id) foreign-key many-to-many
+  db2.pets(owner_id) -> db3.users(id) foreign-key many-to-one
+  db3.user_following(follower_id) -> db3.users(id) foreign-key many-to-one
+  db3.user_following(user_id) -> db3.users(id) foreign-key many-to-one
+  db3.users(id) -> db3.users(id) foreign-key many-to-many
+  devices(device_active_session) -> sessions(id) foreign-key many-to-one
+  doc_related(doc_id) -> docs(id) foreign-key many-to-one
+  doc_related(related_id) -> docs(id) foreign-key many-to-one
+  docs(doc_children) -> docs(id) foreign-key many-to-one
+  docs(doc_related) -> docs(id) orm many-to-one
+  docs(id) -> docs(id) foreign-key many-to-many
+  field_types(file_field) -> files(id) foreign-key many-to-one
+  files(attached_file_fi) -> attached_files(id) orm many-to-one
+  files(file_children) -> files(id) orm many-to-one
+  files(file_type_files) -> file_types(id) foreign-key many-to-one
+  files(group_files) -> groups(id) foreign-key many-to-one
+  files(id) -> file_types(id) orm many-to-many
+  files(id) -> processes(id) orm many-to-many
+  files(id) -> users(id,user_id,oid) orm many-to-many
+  files(parent_id) -> files(id) foreign-key many-to-one
+  files(process_files) -> processes(id) orm many-to-one
+  files(user_files) -> users(id) foreign-key many-to-one
+  friends(friend) -> users(oid) foreign-key many-to-one
+  friends(user) -> users(oid) foreign-key many-to-one
+  friendships(friend_id) -> users(id) foreign-key many-to-one
+  friendships(user_id) -> users(id) foreign-key many-to-one
+  group_infos(group_info) -> groups(id) orm one-to-one
+  group_infos(id) -> groups(id) orm many-to-many
+  group_tags(group_id) -> groups(id) foreign-key many-to-one
+  group_tags(tag_id) -> tags(id) foreign-key many-to-one
+  group_users(group_id) -> groups(id) foreign-key many-to-one
+  group_users(user_id) -> users(oid) foreign-key many-to-one
+  groups(group_admin) -> users(id) foreign-key many-to-one
+  groups(group_info) -> group_infos(id) foreign-key many-to-one
+  groups(group_tag_group) -> group_tags(id) orm many-to-one
+  groups(id) -> tags(id) orm many-to-many
+  groups(tag_groups) -> tags(id) orm many-to-one
+  groups(tenant_id) -> tenants(id) foreign-key many-to-one
+  groups(user_group_group) -> user_groups(id) orm many-to-one
+  groups(user_groups) -> users(id,user_id,oid) orm many-to-one
+  infos(id) -> users(id) foreign-key one-to-one
+  int_si_ds(id) -> int_si_ds(id) orm many-to-many
+  int_si_ds(int_sid_parent) -> int_si_ds(id) foreign-key many-to-one
+  metadata(id) -> users(id) foreign-key one-to-one
+  metadata(id) -> users(id,user_id,oid) orm many-to-many
+  metadata(metadata_parent) -> metadata(id) orm many-to-one
+  metadata(parent_id) -> metadata(id) foreign-key many-to-one
+  metadata(user_metadata) -> users(id,user_id,oid) orm many-to-one
+  nodes(node_children) -> nodes(id) orm many-to-one
+  nodes(node_next) -> nodes(id) foreign-key one-to-one
+  nodes(parent_id) -> nodes(id) foreign-key many-to-one
+  nodes(prev_id) -> nodes(id) foreign-key one-to-one
+  notes(note_children) -> notes(id) foreign-key many-to-one
+  parents(parent_id) -> users(id) foreign-key many-to-one
+  parents(user_id) -> users(id) foreign-key many-to-one
+  payments(card_id) -> cards(id) foreign-key many-to-one
+  payments(card_payments) -> cards(id) orm many-to-one
+  payments(id) -> cards(id) orm many-to-many
+  pet(user_pets) -> users(id) foreign-key many-to-one
+  pet(user_team) -> users(id) foreign-key one-to-one
+  pet_friends(friend_id) -> pets(id) foreign-key many-to-one
+  pet_friends(pet_id) -> pets(id) foreign-key many-to-one
+  pets(best_friend_id) -> pets(id) foreign-key one-to-one
+  pets(id) -> pets(id) foreign-key many-to-many
+  pets(id) -> users(id,user_id,oid) orm many-to-many
+  pets(owner_id) -> users(id) foreign-key one-to-one
+  pets(pet_best_friend) -> pets(id) foreign-key one-to-one
+  pets(pet_friends) -> pets(id) orm many-to-one
+  pets(user_pets) -> users(oid) foreign-key many-to-one
+  pets(user_team) -> users(id,user_id,oid) orm one-to-one
+  posts(author_id) -> users(id) foreign-key many-to-one
+  posts(id) -> users(id,user_id,oid) orm many-to-many
+  posts(user_posts) -> users(id,user_id,oid) orm many-to-one
+  processes(attached_file_proc) -> attached_files(id) orm many-to-one
+  relationship_infos(relationship_info) -> relationships(user_id,relative_id,id) orm many-to-one
+  relationships(info_id) -> relationship_infos(id) foreign-key many-to-one
+  relationships(relative_id) -> users(id) foreign-key many-to-one
+  relationships(user_id) -> users(id) foreign-key many-to-one
+  rentals(car_id) -> cars(id) foreign-key many-to-one
+  rentals(car_rentals) -> cars(id) orm many-to-one
+  rentals(id) -> cars(id) orm many-to-many
+  rentals(id) -> users(id,user_id,oid) orm many-to-many
+  rentals(user_id) -> users(id) foreign-key many-to-one
+  rentals(user_rentals) -> users(id,user_id,oid) orm many-to-one
+  role_users(role_id) -> roles(id) foreign-key many-to-one
+  role_users(user_id) -> users(id) foreign-key many-to-one
+  roles(id) -> users(id,user_id,oid) orm many-to-many
+  roles(role_user_role) -> role_users(role_id,user_id,id) orm many-to-one
+  roles(user_roles) -> users(id,user_id,oid) orm many-to-one
+  sessions(device_active_session) -> devices(id) orm many-to-one
+  sessions(device_id) -> session_devices(id) foreign-key many-to-one
+  sessions(device_sessions) -> devices(id) foreign-key many-to-one
+  sessions(id) -> devices(id) orm many-to-many
+  sessions(id) -> session_devices(id) orm many-to-many
+  sessions(session_device_sessions) -> session_devices(id) orm many-to-one
+  spec_card(card_id) -> cards(id) foreign-key many-to-one
+  spec_card(spec_id) -> specs(id) foreign-key many-to-one
+  streets(city_streets) -> cities(id) foreign-key many-to-one
+  streets(id) -> cities(id) orm many-to-many
+  tags(group_tag_tag) -> group_tags(id) orm many-to-one
+  tags(tweet_tag_tag) -> tweet_tags(id) orm many-to-one
+  task_teams(task_id) -> tasks(id) foreign-key many-to-one
+  task_teams(team_id) -> teams(id) foreign-key many-to-one
+  tasks(id) -> users(id,user_id,oid) orm many-to-many
+  tasks(user_tasks) -> users(id) foreign-key many-to-one
+  teams(id) -> tasks(id) orm many-to-many
+  teams(id) -> users(id,user_id,oid) orm many-to-many
+  teams(team_mixin_teams) -> tasks(id) orm many-to-one
+  teams(team_mixin_teams) -> users(id,user_id,oid) orm many-to-one
+  tenants(tenant_mixin_tenant) -> groups(id) orm many-to-one
+  tenants(tenant_mixin_tenant) -> users(id,user_id,oid) orm many-to-one
+  test_schemas(id) -> test_schemas(id) orm many-to-many
+  test_schemas(test_schema_one) -> test_schemas(id) orm many-to-one
+  tokens(account_token) -> accounts(id) foreign-key many-to-one
+  tweet_likes(tweet_id) -> tweets(id) foreign-key many-to-one
+  tweet_likes(user_id) -> users(id) foreign-key many-to-one
+  tweet_tags(tag_id) -> tags(id) foreign-key many-to-one
+  tweet_tags(tweet_id) -> tweets(id) foreign-key many-to-one
+  tweets(id) -> tags(id) orm many-to-many
+  tweets(id) -> users(id,user_id,oid) orm many-to-many
+  tweets(tag_tweets) -> tags(id) orm many-to-one
+  tweets(tweet_like_tweet) -> tweet_likes(tweet_id,user_id,id) orm many-to-one
+  tweets(tweet_tag_tweet) -> tweet_tags(id) orm many-to-one
+  tweets(user_liked_tweets) -> users(id,user_id,oid) orm many-to-one
+  tweets(user_tweet_tweet) -> user_tweets(id) orm many-to-one
+  tweets(user_tweets) -> users(id,user_id,oid) orm many-to-one
+  user_following(follower_id) -> users(id) foreign-key many-to-one
+  user_following(user_id) -> users(id) foreign-key many-to-one
+  user_friends(friend_id) -> users(id) foreign-key many-to-one
+  user_friends(user_id) -> users(id) foreign-key many-to-one
+  user_groups(group_id) -> groups(id) foreign-key many-to-one
+  user_groups(user_id) -> users(id) foreign-key many-to-one
+  user_teams(team_id) -> teams(id) foreign-key many-to-one
+  user_teams(user_id) -> users(id) foreign-key many-to-one
+  user_tweets(tweet_id) -> tweets(id) foreign-key many-to-one
+  user_tweets(user_id) -> users(id) foreign-key many-to-one
+  users(blog_admins) -> blogs(id) foreign-key many-to-one
+  users(friendship_friend) -> friendships(id) orm many-to-one
+  users(friendship_user) -> friendships(id) orm many-to-one
+  users(group_admin) -> groups(id) orm many-to-one
+  users(group_blocked) -> groups(id) foreign-key many-to-one
+  users(group_users) -> groups(id) orm many-to-one
+  users(hooks_mixin_user) -> with_mixins(id) orm many-to-one
+  users(id) -> users(id) foreign-key many-to-many
+  users(id) -> users(id) foreign-key many-to-many
+  users(id,user_id,oid) -> groups(id) orm many-to-many
+  users(id,user_id,oid) -> infos(id) orm many-to-many
+  users(info_user) -> infos(id) orm many-to-one
+  users(oid) -> users(oid) foreign-key many-to-many
+  users(parent_id) -> users(id) foreign-key many-to-one
+  users(pet_owner) -> pets(id) orm many-to-one
+  users(post_author) -> posts(id) orm many-to-one
+  users(relationship_relative) -> relationships(user_id,relative_id,id) orm many-to-one
+  users(relationship_user) -> relationships(user_id,relative_id,id) orm many-to-one
+  users(role_user_user) -> role_users(role_id,user_id,id) orm many-to-one
+  users(spouse_id) -> users(id) foreign-key one-to-one
+  users(tenant_id) -> tenants(id) foreign-key many-to-one
+  users(tweet_like_user) -> tweet_likes(tweet_id,user_id,id) orm many-to-one
+  users(user_best_friend) -> users(id) foreign-key one-to-one
+  users(user_children) -> users(oid) foreign-key many-to-one
+  users(user_following) -> users(id,user_id,oid) orm many-to-one
+  users(user_friends) -> users(id,user_id,oid) orm many-to-one
+  users(user_group_user) -> user_groups(id) orm many-to-one
+  users(user_parent) -> users(id) foreign-key one-to-one
+  users(user_relatives) -> users(id,user_id,oid) orm many-to-one
+  users(user_spouse) -> users(id,user_id,oid) foreign-key one-to-one
+  users(user_tweet_user) -> user_tweets(id) orm many-to-one
+  users(with_mixin_owner) -> with_mixins(id) orm many-to-one
+engines: mariadb, mysql, postgresql, sqlite
+warnings: 0

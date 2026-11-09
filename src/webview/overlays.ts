@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Full-area state overlays (scanning / empty / error) and a small busy chip shown while rescanning
  * with the previous diagram still visible. Also owns the aria-live status region.
  */
@@ -23,13 +23,28 @@ export class Overlays {
   readonly el: HTMLElement;
   readonly busyChip: HTMLElement;
   readonly liveRegion: HTMLElement;
+  /** Non-blocking notice shown when a model is loaded but nothing is drawable. */
+  readonly notice: HTMLElement;
 
   constructor(private readonly cb: OverlayCallbacks) {
     this.el = el('div', { class: 'overlay', attrs: { role: 'status' } });
     this.el.hidden = true;
     this.busyChip = el('div', { class: 'busy-chip' });
     this.busyChip.hidden = true;
+    this.notice = el('div', { class: 'empty-view' });
+    this.notice.hidden = true;
     this.liveRegion = el('div', { class: 'sr-only', attrs: { 'aria-live': 'polite', role: 'status' } });
+  }
+
+  /** Shows a message (optionally with a button) when the diagram has no visible tables; 
+ull hides it. */
+  setNotice(text: string | null, action?: { label: string; run(): void }): void {
+    while (this.notice.firstChild) this.notice.removeChild(this.notice.firstChild);
+    this.notice.hidden = text === null;
+    if (text === null) return;
+    this.notice.appendChild(el('p', { class: 'overlay-text', text }));
+    if (action) this.notice.appendChild(button({ class: 'btn', label: action.label, on: { click: () => action.run() } }));
+    this.liveRegion.textContent = text;
   }
 
   /** Shows / hides the small busy chip (rescanning, layout progress) with custom text. */

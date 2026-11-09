@@ -3,11 +3,15 @@
  * All model text is inserted via textContent.
  */
 
-import type { Entity, SchemaModel, SourceRef } from '../core/model';
+import type { Entity, Provenance, Relation, SchemaModel, SourceRef } from '../core/model';
 import { ENGINES, SOURCE_LABELS } from '../core/model';
+import { columnNote, emptyNotes, tableNote, withColumnNote, withTableNote, type Notes } from '../core/notes';
 import {
   columnKeys,
   columnType,
+  DERIVATION_LABELS,
+  isUncertain,
+  provenanceSummary,
   describeRelation,
   entityKindLabel,
   enumSummary,
@@ -23,6 +27,9 @@ export interface SidePanelCallbacks {
   onJump(entityId: string): void;
   onOpenRef(ref: SourceRef): void;
   onShowLog(): void;
+  /** The user edited a note; 
+otes is the complete new set. */
+  onNotesChange(notes: Notes): void;
   onClose(): void;
 }
 
@@ -31,6 +38,9 @@ export class SidePanel {
   private readonly body: HTMLElement;
   private readonly titleEl: HTMLElement;
   private model: SchemaModel | null = null;
+  private notes: Notes = emptyNotes();
+  /** Columns whose note editor is open (entityId\0column). */
+  private readonly editing = new Set<string>();
 
   constructor(private readonly cb: SidePanelCallbacks) {
     this.el = el('aside', { class: 'side-panel', attrs: { 'aria-label': 'Details', role: 'region' } });
@@ -39,6 +49,28 @@ export class SidePanel {
     const header = el('div', { class: 'side-header' }, [this.titleEl, closeBtn]);
     this.body = el('div', { class: 'side-body' });
     this.el.append(header, this.body);
+  }
+
+  setNotes(notes: Notes): void {
+    this.notes = notes;
+  }
+
+  /** True while the user is typing in a note field (the host defers re-rendering then). */
+  isEditing(): boolean {
+    const a = document.activeElement;
+    return !!a && a.tagName === 'TEXTAREA' && this.el.contains(a);
+  }
+
+  private commit(notes: Notes): void {
+    this.notes = notes;
+    this.cb.onNotesChange(notes);
+  }
+
+  private noteField(value: string, placeholder: string, label: string, cls: string, onSave: (text: string) => void): HTMLElement {
+    const ta = el('textarea', { class: cls, attrs: { rows: 3, placeholder, maxlength: 2000, 'aria-label': label } });
+    ta.value = value;
+    ta.addEventListener('change', () => onSave(ta.value));
+    return ta;
   }
 
   setModel(model: SchemaModel | null): void {
@@ -75,11 +107,15 @@ export class SidePanel {
       ...(e.schema ? [el('span', { class: 'badge badge-schema', text: e.schema })] : []),
       ...e.sources.map((s) => el('span', { class: 'badge badge-source', text: SOURCE_LABELS[s] ?? s })),
       ...(e.engine ? [el('span', { class: 'badge badge-engine', text: ENGINES[e.engine]?.label ?? e.engine })] : []),
+      ...(isUncertain(e.provenance) ? [uncertainBadge(e.provenance!)] : []),
     ]);
     body.appendChild(kindRow);
 
     if (e.modelNames.length) body.appendChild(metaLine('Model', e.modelNames.join(', ')));
     if (e.comment) body.appendChild(el('p', { class: 'side-comment', text: e.comment }));
+    body.appendChild(sectionTitle('Notes'));
+    body.appendChild(el('p', { class: 'side-note-hint', text: 'Saved to .dbnext/notes.json and included in exports.' }));
+    body.appendChild(this.noteField(tableNote(this.notes, e.id) ?? '', 'Add a note about this table…', `Note for ${qualifiedName(e)}`, 'side-note', (v) => this.commit(withTableNote(this.notes, e.id, v))));
 
     if (e.source) {
       const link = button({
@@ -115,14 +151,27 @@ export class SidePanel {
           if (c.references.inferred) refCell.appendChild(el('span', { class: 'muted', text: ' (inferred)' }));
         }
         const row = el('tr', {}, [
-          el('td', { class: 'mono', text: c.name }),
+          el('td', { class: 'mono' }, [el('span', { text: c.name }), ...(this.noteToggle(e, c.name))]),
           typeCell,
           el('td', { class: 'center', text: c.nullable && !c.primaryKey ? '✓' : '' }),
           el('td', {}, columnKeys(c).map((k) => el('span', { class: `kbadge k-${k.toLowerCase()}`, text: k }))),
           refCell,
         ]);
         if (c.default !== undefined) row.title = `default: ${c.default}`;
+        if (isUncertain(c.provenance)) {
+          row.classList.add('is-uncertain');
+          row.title = [row.title, provenanceSummary(c.provenance!)].filter(Boolean).join(' · ');
+        }
         tbody.appendChild(row);
+        const cNote = columnNote(this.notes, e.id, c.name);
+        const open = this.editing.has(`\0${c.name}`);
+        if (c.comment || cNote || open) {
+          const cell = el('td', { attrs: { colspan: 5 } });
+          if (c.comment) cell.appendChild(el('p', { class: 'col-comment', text: c.comment }));
+          if (open) cell.appendChild(this.noteField(cNote ?? '', 'Add a note about this column…', `Note for column ${c.name}`, 'side-note col-note', (v) => this.commit(withColumnNote(this.notes, e.id, c.name, v))));
+          else if (cNote) cell.appendChild(el('p', { class: 'col-comment', text: `Note: ${cNote}` }));
+          tbody.appendChild(el('tr', { class: 'col-note-row' }, [cell]));
+        }
       }
       table.append(thead, tbody);
       body.appendChild(table);
@@ -146,18 +195,68 @@ export class SidePanel {
     const refOut = (rels?.outgoing ?? []).filter((r) => r.cardinality !== 'many-to-many');
     const refIn = rels?.incoming ?? [];
     const m2m = (rels?.outgoing ?? []).filter((r) => r.cardinality === 'many-to-many');
-    const relGroup = (title: string, items: { text: string; target: string }[]): void => {
+    const relGroup = (title: string, items: { text: string; target: string; prov?: Provenance }[]): void => {
       if (!items.length) return;
       body.appendChild(sectionTitle(title));
       const ul = el('ul', { class: 'side-list rel-list' });
       for (const it of items) {
-        ul.appendChild(el('li', {}, [button({ class: 'link-inline', label: it.text, title: `Jump to ${this.nameOf(it.target)}`, on: { click: () => this.cb.onJump(it.target) } })]));
+        ul.appendChild(el('li', { class: isUncertain(it.prov) ? 'is-uncertain' : '' }, [button({ class: 'link-inline', label: it.text, title: `Jump to ${this.nameOf(it.target)}`, on: { click: () => this.cb.onJump(it.target) } })]));
       }
       body.appendChild(ul);
     };
-    relGroup('References', refOut.map((r) => ({ text: describeRelation(r, e.id, (id) => this.nameOf(id)), target: r.to })));
-    relGroup('Referenced by', refIn.map((r) => ({ text: describeRelation(r, e.id, (id) => this.nameOf(id)), target: r.from })));
-    relGroup('Many-to-many', m2m.map((r) => ({ text: describeRelation(r, e.id, (id) => this.nameOf(id)), target: r.from === e.id ? r.to : r.from })));
+    relGroup('References', refOut.map((r) => ({ text: describeRelation(r, e.id, (id) => this.nameOf(id)), target: r.to, prov: r.provenance })));
+    relGroup('Referenced by', refIn.map((r) => ({ text: describeRelation(r, e.id, (id) => this.nameOf(id)), target: r.from, prov: r.provenance })));
+    relGroup('Many-to-many', m2m.map((r) => ({ text: describeRelation(r, e.id, (id) => this.nameOf(id)), target: r.from === e.id ? r.to : r.from, prov: r.provenance })));
+    this.renderWhy(e, [...refOut, ...refIn, ...m2m]);
+  }
+
+  /** The small "edit note" button next to a column name. */
+  private noteToggle(e: Entity, column: string): HTMLElement[] {
+    const key = `${e.id}\0${column}`;
+    const open = this.editing.has(key);
+    const btn = button({
+      class: `link-inline note-toggle${open ? ' is-open' : ''}`,
+      label: columnNote(this.notes, e.id, column) ? '✎' : '+',
+      title: open ? 'Hide note editor' : 'Add or edit a note for this column',
+      attrs: { 'aria-label': `Note for column ${column}`, 'aria-expanded': open },
+      on: {
+        click: () => {
+          if (open) this.editing.delete(key);
+          else this.editing.add(key);
+          this.render(e.id);
+        },
+      },
+    });
+    return [btn];
+  }
+
+  /** "Why is this here?": how the entity, its implied columns and its relations were derived, with source links. */
+  private renderWhy(e: Entity, rels: Relation[]): void {
+    const items: { label: string; prov: Provenance }[] = [];
+    if (e.provenance) items.push({ label: 'This table', prov: e.provenance });
+    for (const c of e.columns) if (c.provenance) items.push({ label: `Column ${c.name}`, prov: c.provenance });
+    for (const r of rels.slice(0, 20)) if (r.provenance) items.push({ label: describeRelation(r, e.id, (id) => this.nameOf(id)), prov: r.provenance });
+    if (!items.length) return;
+    this.body.appendChild(sectionTitle('Why is this here?'));
+    for (const it of items) this.body.appendChild(this.provenanceBlock(it.label, it.prov));
+  }
+
+  private provenanceBlock(label: string, p: Provenance): HTMLElement {
+    const box = el('div', { class: `prov${isUncertain(p) ? ' is-uncertain' : ''}` });
+    box.appendChild(el('div', { class: 'prov-head' }, [el('span', { class: 'prov-label', text: label }), el('span', { class: `badge badge-conf conf-${p.confidence}`, text: provenanceSummary(p) })]));
+    if (p.notes.length) {
+      const ul = el('ul', { class: 'side-list prov-notes' });
+      for (const n of p.notes) ul.appendChild(el('li', { text: n }));
+      box.appendChild(ul);
+    }
+    if (p.refs.length) {
+      const row = el('div', { class: 'prov-refs' });
+      for (const ref of p.refs) {
+        row.appendChild(button({ class: 'link-btn', icon: uiIcon('goto'), label: `${ref.file}:${ref.line + 1}`, title: 'Open source', on: { click: () => this.cb.onOpenRef(ref) } }));
+      }
+      box.appendChild(row);
+    }
+    return box;
   }
 
   // ── Overview ───────────────────────────────────────────────────────────────────────────────────
@@ -241,6 +340,12 @@ export class SidePanel {
     }
     return ul;
   }
+}
+
+function uncertainBadge(p: Provenance): HTMLElement {
+  const b = el('span', { class: 'badge badge-uncertain', text: DERIVATION_LABELS[p.derivation] ?? p.derivation });
+  b.title = provenanceSummary(p);
+  return b;
 }
 
 function sectionTitle(text: string): HTMLElement {

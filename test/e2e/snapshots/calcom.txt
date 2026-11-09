@@ -1,0 +1,311 @@
+entities: 104
+  _platformoauthclienttouser [table]: A, B
+  _user_eventtype [table]: A, B
+  accesscode [table]: id, code, clientId, expiresAt, scopes, userId, teamId, codeChallenge, codeChallengeMethod
+  accesstoken [table]: id, secret, createdAt, expiresAt, platformOAuthClientId, userId
+  account [table]: id, userId, type, provider, providerAccountId, providerEmail, refresh_token, access_token, expires_at, token_type, scope, id_token, session_state
+  agent [table]: id, name, userId, teamId, providerAgentId, inboundEventTypeId, outboundEventTypeId, enabled, createdAt, updatedAt
+  apikey [table]: id, userId, teamId, note, createdAt, expiresAt, lastUsedAt, hashedKey, appId
+  app [table]: slug, dirName, keys, categories, createdAt, updatedAt, enabled
+  assignmentreason [table]: id, createdAt, bookingId, reasonEnum, reasonString
+  attendee [table]: id, email, name, timeZone, phoneNumber, locale, bookingId, noShow
+  attribute [table]: id, teamId, type, name, slug, enabled, usersCanEditRelation, createdAt, updatedAt, isWeightsEnabled, isLocked
+  attributeoption [table]: id, attributeId, value, slug, isGroup, contains
+  attributesyncfieldmapping [table]: id, integrationFieldName, attributeId, enabled, integrationAttributeSyncId, createdAt, updatedAt
+  attributesyncrule [table]: id, integrationAttributeSyncId, rule, createdAt, updatedAt
+  attributetouser [table]: id, memberId, attributeOptionId, weight, createdAt, createdById, createdByDSyncId, updatedAt, updatedById, updatedByDSyncId
+  auditactor [table]: id, type, userUuid, attendeeId, credentialId, email, phone, name, createdAt
+  availability [table]: id, userId, eventTypeId, days, startTime, endTime, date, scheduleId
+  avatars [table]: teamId, userId, data, objectKey, isBanner
+  booking [table]: id, uid, idempotencyKey, userId, userPrimaryEmail, eventTypeId, title, description, customInputs, responses, startTime, endTime, location, createdAt, updatedAt, status, paid, destinationCalendarId, cancellationReason, rejectionReason, reassignReason, reassignById, dynamicEventSlugRef, dynamicGroupSlugRef, rescheduled, fromReschedule, recurringEventId, smsReminderNumber, scheduledJobs, metadata, isRecorded, iCalUID, iCalSequence, rating, ratingFeedback, noShowHost, oneTimePassword, cancelledBy, rescheduledBy, creationSource
+  bookingaudit [table]: id, bookingUid, actorId, type, action, timestamp, createdAt, updatedAt, source, operationId, data, context
+  bookingdenormalized [table]: id, uid, eventTypeId, title, description, startTime, endTime, createdAt, updatedAt, location, paid, status, rescheduled, userId, teamId, eventLength, eventParentId, userEmail, userName, userUsername, ratingFeedback, rating, noShowHost, isTeamBooking
+  bookinginternalnote [table]: id, notePresetId, text, bookingId, createdById, createdAt
+  bookingreference [table]: id, type, uid, meetingId, thirdPartyRecurringEventId, meetingPassword, meetingUrl, bookingId, externalCalendarId, deleted, credentialId, delegationCredentialId
+  bookingreport [table]: id, bookingUid, bookerEmail, reportedById, organizationId, reason, description, cancelled, createdAt, updatedAt, status, systemStatus, watchlistId, globalWatchlistId
+  bookingseat [table]: id, referenceUid, bookingId, attendeeId, data, metadata
+  bookingtimestatus [view]: id, uid, eventTypeId, title, description, startTime, endTime, createdAt, location, paid, status, rescheduled, userId, teamId, eventLength, timeStatus, eventParentId, userEmail, username, ratingFeedback, rating, noShowHost, isTeamBooking
+  bookingtimestatusdenormalized [view]: id, uid, eventTypeId, title, description, startTime, endTime, createdAt, updatedAt, location, paid, status, rescheduled, userId, teamId, eventLength, eventParentId, userEmail, userName, userUsername, ratingFeedback, rating, noShowHost, isTeamBooking, timeStatus
+  calaiphonenumber [table]: id, userId, teamId, phoneNumber, provider, providerPhoneNumberId, createdAt, updatedAt, stripeCustomerId, stripeSubscriptionId, subscriptionStatus, inboundAgentId, outboundAgentId
+  calendarcache [table]: id, key, value, expiresAt, updatedAt, credentialId, userId
+  calendarcacheevent [table]: id, selectedCalendarId, externalId, externalEtag, iCalUID, iCalSequence, summary, description, location, start, end, isAllDay, timeZone, status, recurringEventId, originalStartTime, createdAt, updatedAt, externalCreatedAt, externalUpdatedAt
+  calvideosettings [table]: eventTypeId, disableRecordingForOrganizer, disableRecordingForGuests, enableAutomaticTranscription, enableAutomaticRecordingForOrganizer, redirectUrlOnExit, disableTranscriptionForGuests, disableTranscriptionForOrganizer, requireEmailForGuests, createdAt, updatedAt
+  credential [table]: id, type, key, encryptedKey, userId, teamId, appId, subscriptionId, paymentStatus, billingCycleStart, invalid, delegationCredentialId
+  creditbalance [table]: id, teamId, userId, additionalCredits, limitReachedAt, warningSentAt
+  creditexpenselog [table]: id, creditBalanceId, bookingUid, credits, creditType, date, smsSid, smsSegments, phoneNumber, email, callDuration, creditFor, externalRef
+  creditpurchaselog [table]: id, creditBalanceId, credits, createdAt
+  delegationcredential [table]: id, workspacePlatformId, serviceAccountKey, enabled, lastEnabledAt, lastDisabledAt, organizationId, domain, createdAt, updatedAt
+  deployment [table]: id, logo, theme, licenseKey, signatureTokenEncrypted, agreedLicenseAt
+  destinationcalendar [table]: id, integration, externalId, primaryEmail, userId, eventTypeId, credentialId, createdAt, updatedAt, delegationCredentialId, customCalendarReminder
+  dsyncdata [table]: id, directoryId, tenant, organizationId
+  dsyncteamgroupmapping [table]: id, organizationId, teamId, directoryId, groupName
+  eventtype [table]: id, title, slug, description, interfaceLanguage, position, locations, length, offsetStart, hidden, userId, profileId, teamId, useEventLevelSelectedCalendars, eventName, parentId, bookingFields, timeZone, periodType, periodStartDate, periodEndDate, periodDays, periodCountCalendarDays, lockTimeZoneToggleOnBookingPage, lockedTimeZone, requiresConfirmation, requiresConfirmationWillBlockSlot, requiresConfirmationForFreeEmail, requiresBookerEmailVerification, canSendCalVideoTranscriptionEmails, autoTranslateDescriptionEnabled, autoTranslateInstantMeetingTitleEnabled, recurringEvent, disableGuests, hideCalendarNotes, hideCalendarEventDetails, minimumBookingNotice, beforeEventBuffer, afterEventBuffer, seatsPerTimeSlot, onlyShowFirstAvailableSlot, showOptimizedSlots, disableCancelling, disableRescheduling, minimumRescheduleNotice, seatsShowAttendees, seatsShowAvailabilityCount, schedulingType, scheduleId, allowReschedulingCancelledBookings, price, currency, slotInterval, metadata, successRedirectUrl, forwardParamsSuccessRedirect, bookingLimits, durationLimits, isInstantEvent, instantMeetingExpiryTimeOffsetInSeconds, instantMeetingScheduleId, instantMeetingParameters, assignAllTeamMembers, assignRRMembersUsingSegment, rrSegmentQueryValue, useEventTypeDestinationCalendarEmail, isRRWeightsEnabled, maxLeadThreshold, includeNoShowInRRCalculation, allowReschedulingPastBookings, hideOrganizerEmail, maxActiveBookingsPerBooker, maxActiveBookingPerBookerOfferReschedule, customReplyToEmail, eventTypeColor, rescheduleWithSameRoundRobinHost, secondaryEmailId, useBookerTimezone, restrictionScheduleId, bookingRequiresAuthentication, rrHostSubsetEnabled, requiresCancellationReason, enablePerHostLocations, createdAt, updatedAt
+  eventtypecustominput [table]: id, eventTypeId, label, type, options, required, placeholder
+  eventtypetranslation [table]: uid, eventTypeId, field, sourceLocale, targetLocale, translatedText, createdAt, createdBy, updatedAt, updatedBy
+  feature [table]: slug, enabled, description, type, stale, lastUsedAt, createdAt, updatedAt, updatedBy
+  feedback [table]: id, date, userId, rating, comment
+  filtersegment [table]: id, name, tableIdentifier, scope, activeFilters, sorting, columnVisibility, columnSizing, perPage, searchTerm, createdAt, updatedAt, userId, teamId
+  hashedlink [table]: id, link, eventTypeId, expiresAt, maxUsageCount, usageCount
+  holidaycache [table]: id, countryCode, calendarId, eventId, name, date, year, createdAt, updatedAt
+  host [table]: userId, eventTypeId, isFixed, priority, weight, weightAdjustment, scheduleId, createdAt, groupId, memberId
+  hostgroup [table]: id, name, eventTypeId, createdAt, updatedAt
+  hostlocation [table]: id, userId, eventTypeId, type, credentialId, link, address, phoneNumber, createdAt, updatedAt
+  instantmeetingtoken [table]: id, token, expires, teamId, bookingId, createdAt, updatedAt
+  integrationattributesync [table]: id, organizationId, name, integration, credentialId, enabled, createdAt, updatedAt
+  internalnotepreset [table]: id, name, cancellationReason, teamId, createdAt
+  managedorganization [table]: managedOrganizationId, managerOrganizationId, createdAt
+  membership [table]: id, teamId, userId, accepted, role, customRoleId, createdAt, updatedAt
+  monthlyproration [table]: id, teamId, monthKey, periodStart, periodEnd, seatsAtStart, seatsAdded, seatsRemoved, netSeatIncrease, seatsAtEnd, subscriptionId, subscriptionItemId, customerId, subscriptionStart, subscriptionEnd, remainingDays, pricePerSeat, proratedAmount, invoiceItemId, invoiceId, invoiceUrl, status, chargedAt, failedAt, failureReason, retryCount, metadata, createdAt, updatedAt, teamBillingId, organizationBillingId
+  notificationssubscriptions [table]: id, userId, subscription
+  oauthclient [table]: clientId, redirectUri, clientSecret, clientType, name, purpose, logo, websiteUrl, rejectionReason, isTrusted, status, userId, createdAt
+  organizationbilling [table]: id, teamId, subscriptionId, subscriptionItemId, customerId, status, planName, subscriptionStart, subscriptionTrialEnd, subscriptionEnd, billingPeriod, billingMode, pricePerSeat, paidSeats, highWaterMark, highWaterMarkPeriodStart, createdAt, updatedAt
+  organizationonboarding [table]: id, createdById, createdAt, orgOwnerEmail, error, updatedAt, organizationId, billingPeriod, pricePerSeat, seats, isPlatform, name, slug, logo, bio, brandColor, bannerUrl, isDomainConfigured, stripeCustomerId, stripeSubscriptionId, stripeSubscriptionItemId, invitedMembers, teams, isComplete
+  organizationsettings [table]: id, organizationId, isOrganizationConfigured, isOrganizationVerified, orgAutoAcceptEmail, lockEventTypeCreationForUsers, adminGetsNoSlotsNotification, isAdminReviewed, isAdminAPIEnabled, allowSEOIndexing, orgProfileRedirectsToVerifiedDomain, disablePhoneOnlySMSNotifications, disableAutofillOnBookingPage, orgAutoJoinOnSignup, disableAttendeeConfirmationEmail, disableAttendeeCancellationEmail, disableAttendeeRescheduledEmail, disableAttendeeRequestEmail, disableAttendeeReassignedEmail, disableAttendeeAwaitingPaymentEmail, disableAttendeeRescheduleRequestEmail, disableAttendeeLocationChangeEmail, disableAttendeeNewEventEmail
+  outofofficeentry [table]: id, uuid, start, end, notes, showNotePublicly, userId, toUserId, reasonId, createdAt, updatedAt
+  outofofficereason [table]: id, emoji, reason, enabled, userId
+  payment [table]: id, uid, appId, bookingId, amount, fee, currency, success, refunded, data, externalId, paymentOption
+  platformauthorizationtoken [table]: id, platformOAuthClientId, userId, createdAt
+  platformbilling [table]: id, customerId, subscriptionId, priceId, plan, billingCycleStart, billingCycleEnd, overdue, managerBillingId
+  platformoauthclient [table]: id, name, secret, permissions, logo, redirectUris, organizationId, bookingRedirectUri, bookingCancelRedirectUri, bookingRescheduleRedirectUri, areEmailsEnabled, areDefaultEventTypesEnabled, areCalendarEventsEnabled, createdAt
+  profile [table]: id, uid, userId, organizationId, username, createdAt, updatedAt
+  ratelimit [table]: id, name, apiKeyId, ttl, limit, blockDuration, createdAt, updatedAt
+  refreshtoken [table]: id, secret, createdAt, expiresAt, platformOAuthClientId, userId
+  remindermail [table]: id, referenceId, reminderType, elapsedMinutes, createdAt
+  resetpasswordrequest [table]: id, createdAt, updatedAt, email, expires
+  role [table]: id, name, color, description, teamId, createdAt, updatedAt, type
+  rolepermission [table]: id, roleId, resource, action, createdAt
+  schedule [table]: id, userId, name, timeZone
+  seatchangelog [table]: id, teamId, changeType, seatCount, userId, triggeredBy, changeDate, monthKey, operationId, processedInProrationId, metadata, createdAt, teamBillingId, organizationBillingId
+  secondaryemail [table]: id, userId, email, emailVerified
+  selectedcalendar [table]: id, userId, integration, externalId, credentialId, createdAt, updatedAt, googleChannelId, googleChannelKind, googleChannelResourceId, googleChannelResourceUri, googleChannelExpiration, channelId, channelKind, channelResourceId, channelResourceUri, channelExpiration, syncSubscribedAt, syncSubscribedErrorAt, syncSubscribedErrorCount, syncToken, syncedAt, syncErrorAt, syncErrorCount, delegationCredentialId, error, lastErrorAt, watchAttempts, unwatchAttempts, maxAttempts, eventTypeId
+  selectedslots [table]: id, eventTypeId, userId, slotUtcStartDate, slotUtcEndDate, uid, releaseAt, isSeat
+  session [table]: id, sessionToken, userId, expires
+  task [table]: id, createdAt, updatedAt, scheduledAt, succeededAt, type, payload, attempts, maxAttempts, lastError, lastFailedAttemptAt, referenceUid
+  team [table]: id, name, slug, logoUrl, calVideoLogo, appLogo, appIconLogo, bio, hideBranding, hideTeamProfileLink, isPrivate, hideBookATeamMember, createdAt, metadata, theme, rrResetInterval, rrTimestampBasis, brandColor, darkBrandColor, bannerUrl, parentId, timeFormat, timeZone, weekStart, isOrganization, pendingPayment, isPlatform, createdByOAuthClientId, smsLockState, smsLockReviewedByAdmin, bookingLimits, includeManagedEventsInLimits, autoOptInFeatures
+  teambilling [table]: id, teamId, subscriptionId, subscriptionItemId, customerId, status, planName, subscriptionStart, subscriptionTrialEnd, subscriptionEnd, billingPeriod, billingMode, pricePerSeat, paidSeats, highWaterMark, highWaterMarkPeriodStart, createdAt, updatedAt
+  teamfeatures [table]: teamId, featureId, enabled, assignedAt, assignedBy, updatedAt
+  temporgredirect [table]: id, from, fromOrgId, type, toUrl, enabled, createdAt, updatedAt
+  tracking [table]: id, bookingId, utm_source, utm_medium, utm_campaign, utm_term, utm_content
+  travelschedule [table]: id, userId, timeZone, startDate, endDate, prevTimeZone
+  userfeatures [table]: userId, featureId, enabled, assignedAt, assignedBy, updatedAt
+  userfiltersegmentpreference [table]: id, userId, tableIdentifier, segmentId, systemSegmentId, createdAt, updatedAt
+  userholidaysettings [table]: id, userId, countryCode, disabledIds, createdAt, updatedAt
+  userpassword [table]: hash, userId
+  users [table]: id, uuid, username, name, email, emailVerified, bio, avatarUrl, timeZone, weekStart, bufferTime, hideBranding, theme, appTheme, created, trialEndsAt, lastActiveAt, defaultScheduleId, completedOnboarding, locale, timeFormat, twoFactorSecret, twoFactorEnabled, backupCodes, identityProvider, identityProviderId, invitedTo, brandColor, darkBrandColor, allowDynamicBooking, allowSEOIndexing, receiveMonthlyDigestEmail, requiresBookerEmailVerification, metadata, verified, role, organizationId, locked, movedToProfileId, isPlatformManaged, smsLockState, smsLockReviewedByAdmin, referralLinkId, creationSource, autoOptInFeatures
+  verificationtoken [table]: id, identifier, token, expires, expiresInDays, createdAt, updatedAt, teamId, secondaryEmailId
+  verifiedemail [table]: id, userId, teamId, email
+  verifiednumber [table]: id, userId, teamId, phoneNumber
+  videocallguest [table]: id, bookingUid, email, name, joinedAt, createdAt, updatedAt
+  watchlist [table]: id, type, value, description, isGlobal, organizationId, action, source, lastUpdatedAt
+  watchlistaudit [table]: id, type, value, description, action, changedAt, changedByUserId, watchlistId
+  watchlisteventaudit [table]: id, watchlistId, eventTypeId, actionTaken, timestamp
+  webhook [table]: id, userId, teamId, eventTypeId, platformOAuthClientId, subscriberUrl, payloadTemplate, createdAt, active, eventTriggers, appId, secret, platform, time, timeUnit, version
+  webhookscheduledtriggers [table]: id, jobName, subscriberUrl, payload, startAfter, retryCount, createdAt, appId, webhookId, bookingId
+  workspaceplatform [table]: id, slug, name, description, defaultServiceAccountKey, createdAt, updatedAt, enabled
+  wrongassignmentreport [table]: id, bookingUid, reportedById, correctAssignee, additionalNotes, teamId, status, reviewedById, reviewedAt, createdAt, updatedAt
+relations: 203
+  _platformoauthclienttouser(A) -> platformoauthclient(id) foreign-key many-to-one
+  _platformoauthclienttouser(B) -> users(id) foreign-key many-to-one
+  _user_eventtype(A) -> eventtype(id) foreign-key many-to-one
+  _user_eventtype(B) -> users(id) foreign-key many-to-one
+  accesscode(clientId) -> oauthclient(clientId) foreign-key many-to-one
+  accesscode(teamId) -> team(id) foreign-key many-to-one
+  accesscode(userId) -> users(id) foreign-key many-to-one
+  accesstoken(platformOAuthClientId) -> platformoauthclient(id) foreign-key many-to-one
+  accesstoken(userId) -> users(id) foreign-key many-to-one
+  account(userId) -> users(id) foreign-key many-to-one
+  agent(teamId) -> team(id) foreign-key many-to-one
+  agent(userId) -> users(id) foreign-key many-to-one
+  apikey(appId) -> app(slug) foreign-key many-to-one
+  apikey(teamId) -> team(id) foreign-key many-to-one
+  apikey(userId) -> users(id) foreign-key many-to-one
+  assignmentreason(bookingId) -> booking(id) foreign-key many-to-one
+  attendee(bookingId) -> booking(id) foreign-key many-to-one
+  attribute(teamId) -> team(id) foreign-key many-to-one
+  attributeoption(attributeId) -> attribute(id) foreign-key many-to-one
+  attributesyncfieldmapping(attributeId) -> attribute(id) foreign-key many-to-one
+  attributesyncfieldmapping(integrationAttributeSyncId) -> integrationattributesync(id) foreign-key many-to-one
+  attributesyncrule(integrationAttributeSyncId) -> integrationattributesync(id) foreign-key one-to-one
+  attributetouser(attributeOptionId) -> attributeoption(id) foreign-key many-to-one
+  attributetouser(createdByDSyncId) -> dsyncdata(directoryId) foreign-key many-to-one
+  attributetouser(createdById) -> users(id) foreign-key many-to-one
+  attributetouser(memberId) -> membership(id) foreign-key many-to-one
+  attributetouser(updatedByDSyncId) -> dsyncdata(directoryId) foreign-key many-to-one
+  attributetouser(updatedById) -> users(id) foreign-key many-to-one
+  auditactor(attendeeId) -> attendee(id) inferred one-to-one
+  auditactor(credentialId) -> credential(id) inferred one-to-one
+  availability(eventTypeId) -> eventtype(id) foreign-key many-to-one
+  availability(scheduleId) -> schedule(id) foreign-key many-to-one
+  availability(userId) -> users(id) foreign-key many-to-one
+  avatars(teamId) -> team(id) inferred many-to-one
+  avatars(userId) -> users(id) inferred many-to-one
+  booking(destinationCalendarId) -> destinationcalendar(id) foreign-key many-to-one
+  booking(eventTypeId) -> eventtype(id) foreign-key many-to-one
+  booking(reassignById) -> users(id) foreign-key many-to-one
+  booking(userId) -> users(id) foreign-key many-to-one
+  bookingaudit(actorId) -> auditactor(id) foreign-key many-to-one
+  bookingdenormalized(eventTypeId) -> eventtype(id) inferred many-to-one
+  bookingdenormalized(teamId) -> team(id) inferred many-to-one
+  bookingdenormalized(userId) -> users(id) inferred many-to-one
+  bookinginternalnote(bookingId) -> booking(id) foreign-key many-to-one
+  bookinginternalnote(createdById) -> users(id) foreign-key many-to-one
+  bookinginternalnote(notePresetId) -> internalnotepreset(id) foreign-key many-to-one
+  bookingreference(bookingId) -> booking(id) foreign-key many-to-one
+  bookingreference(credentialId) -> credential(id) foreign-key many-to-one
+  bookingreference(delegationCredentialId) -> delegationcredential(id) foreign-key many-to-one
+  bookingreport(bookingUid) -> booking(uid) foreign-key one-to-one
+  bookingreport(globalWatchlistId) -> watchlist(id) foreign-key many-to-one
+  bookingreport(organizationId) -> team(id) foreign-key many-to-one
+  bookingreport(reportedById) -> users(id) foreign-key many-to-one
+  bookingreport(watchlistId) -> watchlist(id) foreign-key many-to-one
+  bookingseat(attendeeId) -> attendee(id) foreign-key one-to-one
+  bookingseat(bookingId) -> booking(id) foreign-key many-to-one
+  bookingtimestatus(eventTypeId) -> eventtype(id) inferred many-to-one
+  bookingtimestatus(teamId) -> team(id) inferred many-to-one
+  bookingtimestatus(userId) -> users(id) inferred many-to-one
+  bookingtimestatusdenormalized(eventTypeId) -> eventtype(id) inferred many-to-one
+  bookingtimestatusdenormalized(teamId) -> team(id) inferred many-to-one
+  bookingtimestatusdenormalized(userId) -> users(id) inferred many-to-one
+  calaiphonenumber(inboundAgentId) -> agent(id) foreign-key many-to-one
+  calaiphonenumber(outboundAgentId) -> agent(id) foreign-key many-to-one
+  calaiphonenumber(teamId) -> team(id) foreign-key many-to-one
+  calaiphonenumber(userId) -> users(id) foreign-key many-to-one
+  calendarcache(credentialId) -> credential(id) foreign-key many-to-one
+  calendarcache(userId) -> users(id) inferred many-to-one
+  calendarcacheevent(selectedCalendarId) -> selectedcalendar(id) foreign-key many-to-one
+  calvideosettings(eventTypeId) -> eventtype(id) foreign-key one-to-one
+  credential(appId) -> app(slug) foreign-key many-to-one
+  credential(delegationCredentialId) -> delegationcredential(id) foreign-key many-to-one
+  credential(teamId) -> team(id) foreign-key many-to-one
+  credential(userId) -> users(id) foreign-key many-to-one
+  creditbalance(teamId) -> team(id) foreign-key one-to-one
+  creditbalance(userId) -> users(id) foreign-key one-to-one
+  creditexpenselog(bookingUid) -> booking(uid) foreign-key many-to-one
+  creditexpenselog(creditBalanceId) -> creditbalance(id) foreign-key many-to-one
+  creditpurchaselog(creditBalanceId) -> creditbalance(id) foreign-key many-to-one
+  delegationcredential(organizationId) -> team(id) foreign-key many-to-one
+  delegationcredential(workspacePlatformId) -> workspaceplatform(id) foreign-key many-to-one
+  destinationcalendar(credentialId) -> credential(id) foreign-key many-to-one
+  destinationcalendar(delegationCredentialId) -> delegationcredential(id) foreign-key many-to-one
+  destinationcalendar(eventTypeId) -> eventtype(id) foreign-key one-to-one
+  destinationcalendar(userId) -> users(id) foreign-key one-to-one
+  dsyncdata(organizationId) -> organizationsettings(organizationId) foreign-key one-to-one
+  dsyncteamgroupmapping(directoryId) -> dsyncdata(directoryId) foreign-key many-to-one
+  dsyncteamgroupmapping(teamId) -> team(id) foreign-key many-to-one
+  eventtype(id) -> users(id) orm many-to-many
+  eventtype(instantMeetingScheduleId) -> schedule(id) foreign-key many-to-one
+  eventtype(parentId) -> eventtype(id) foreign-key many-to-one
+  eventtype(profileId) -> profile(id) foreign-key many-to-one
+  eventtype(restrictionScheduleId) -> schedule(id) foreign-key many-to-one
+  eventtype(scheduleId) -> schedule(id) foreign-key many-to-one
+  eventtype(secondaryEmailId) -> secondaryemail(id) foreign-key many-to-one
+  eventtype(teamId) -> team(id) foreign-key many-to-one
+  eventtype(userId) -> users(id) foreign-key many-to-one
+  eventtypecustominput(eventTypeId) -> eventtype(id) foreign-key many-to-one
+  eventtypetranslation(createdBy) -> users(id) foreign-key many-to-one
+  eventtypetranslation(eventTypeId) -> eventtype(id) foreign-key many-to-one
+  eventtypetranslation(updatedBy) -> users(id) foreign-key many-to-one
+  feedback(userId) -> users(id) foreign-key many-to-one
+  filtersegment(teamId) -> team(id) foreign-key many-to-one
+  filtersegment(userId) -> users(id) foreign-key many-to-one
+  hashedlink(eventTypeId) -> eventtype(id) foreign-key one-to-one
+  host(eventTypeId) -> eventtype(id) foreign-key many-to-one
+  host(groupId) -> hostgroup(id) foreign-key many-to-one
+  host(memberId) -> membership(id) foreign-key many-to-one
+  host(scheduleId) -> schedule(id) foreign-key many-to-one
+  host(userId) -> users(id) foreign-key many-to-one
+  hostgroup(eventTypeId) -> eventtype(id) foreign-key many-to-one
+  hostlocation(credentialId) -> credential(id) foreign-key many-to-one
+  hostlocation(userId,eventTypeId) -> host(userId,eventTypeId) foreign-key one-to-one
+  instantmeetingtoken(bookingId) -> booking(id) foreign-key one-to-one
+  instantmeetingtoken(teamId) -> team(id) foreign-key many-to-one
+  integrationattributesync(credentialId) -> credential(id) foreign-key many-to-one
+  integrationattributesync(organizationId) -> team(id) foreign-key many-to-one
+  internalnotepreset(teamId) -> team(id) foreign-key many-to-one
+  managedorganization(managedOrganizationId) -> team(id) foreign-key one-to-one
+  managedorganization(managerOrganizationId) -> team(id) foreign-key many-to-one
+  membership(customRoleId) -> role(id) foreign-key many-to-one
+  membership(teamId) -> team(id) foreign-key many-to-one
+  membership(userId) -> users(id) foreign-key many-to-one
+  monthlyproration(organizationBillingId) -> organizationbilling(id) foreign-key many-to-one
+  monthlyproration(teamBillingId) -> teambilling(id) foreign-key many-to-one
+  monthlyproration(teamId) -> team(id) foreign-key many-to-one
+  notificationssubscriptions(userId) -> users(id) foreign-key many-to-one
+  oauthclient(userId) -> users(id) foreign-key many-to-one
+  organizationbilling(teamId) -> team(id) foreign-key one-to-one
+  organizationonboarding(createdById) -> users(id) foreign-key many-to-one
+  organizationonboarding(organizationId) -> team(id) foreign-key one-to-one
+  organizationsettings(organizationId) -> team(id) foreign-key one-to-one
+  outofofficeentry(reasonId) -> outofofficereason(id) foreign-key many-to-one
+  outofofficeentry(toUserId) -> users(id) foreign-key many-to-one
+  outofofficeentry(userId) -> users(id) foreign-key many-to-one
+  outofofficereason(userId) -> users(id) foreign-key many-to-one
+  payment(appId) -> app(slug) foreign-key many-to-one
+  payment(bookingId) -> booking(id) foreign-key many-to-one
+  platformauthorizationtoken(platformOAuthClientId) -> platformoauthclient(id) foreign-key many-to-one
+  platformauthorizationtoken(userId) -> users(id) foreign-key many-to-one
+  platformbilling(id) -> team(id) foreign-key one-to-one
+  platformbilling(managerBillingId) -> platformbilling(id) foreign-key many-to-one
+  platformoauthclient(id) -> users(id) orm many-to-many
+  platformoauthclient(organizationId) -> team(id) foreign-key many-to-one
+  profile(organizationId) -> team(id) foreign-key many-to-one
+  profile(userId) -> users(id) foreign-key many-to-one
+  ratelimit(apiKeyId) -> apikey(id) foreign-key many-to-one
+  refreshtoken(platformOAuthClientId) -> platformoauthclient(id) foreign-key many-to-one
+  refreshtoken(userId) -> users(id) foreign-key many-to-one
+  role(teamId) -> team(id) foreign-key many-to-one
+  rolepermission(roleId) -> role(id) foreign-key many-to-one
+  schedule(userId) -> users(id) foreign-key many-to-one
+  seatchangelog(organizationBillingId) -> organizationbilling(id) foreign-key many-to-one
+  seatchangelog(processedInProrationId) -> monthlyproration(id) foreign-key many-to-one
+  seatchangelog(teamBillingId) -> teambilling(id) foreign-key many-to-one
+  seatchangelog(teamId) -> team(id) foreign-key many-to-one
+  seatchangelog(userId) -> users(id) inferred many-to-one
+  secondaryemail(userId) -> users(id) foreign-key many-to-one
+  selectedcalendar(credentialId) -> credential(id) foreign-key many-to-one
+  selectedcalendar(delegationCredentialId) -> delegationcredential(id) foreign-key many-to-one
+  selectedcalendar(eventTypeId) -> eventtype(id) foreign-key many-to-one
+  selectedcalendar(userId) -> users(id) foreign-key many-to-one
+  selectedslots(eventTypeId) -> eventtype(id) inferred many-to-one
+  selectedslots(userId) -> users(id) inferred many-to-one
+  session(userId) -> users(id) foreign-key many-to-one
+  team(createdByOAuthClientId) -> platformoauthclient(id) foreign-key many-to-one
+  team(id) -> team(id) foreign-key many-to-many
+  team(parentId) -> team(id) foreign-key many-to-one
+  teambilling(teamId) -> team(id) foreign-key one-to-one
+  teamfeatures(featureId) -> feature(slug) foreign-key many-to-one
+  teamfeatures(teamId) -> team(id) foreign-key many-to-one
+  tracking(bookingId) -> booking(id) foreign-key one-to-one
+  travelschedule(userId) -> users(id) foreign-key many-to-one
+  userfeatures(featureId) -> feature(slug) foreign-key many-to-one
+  userfeatures(userId) -> users(id) foreign-key many-to-one
+  userfiltersegmentpreference(segmentId) -> filtersegment(id) foreign-key many-to-one
+  userfiltersegmentpreference(userId) -> users(id) foreign-key many-to-one
+  userholidaysettings(userId) -> users(id) foreign-key one-to-one
+  userpassword(userId) -> users(id) foreign-key one-to-one
+  users(id) -> platformoauthclient(id) foreign-key many-to-many
+  users(movedToProfileId) -> profile(id) foreign-key one-to-one
+  users(organizationId) -> team(id) foreign-key many-to-one
+  verificationtoken(secondaryEmailId) -> secondaryemail(id) foreign-key many-to-one
+  verificationtoken(teamId) -> team(id) foreign-key one-to-one
+  verifiedemail(teamId) -> team(id) foreign-key many-to-one
+  verifiedemail(userId) -> users(id) foreign-key many-to-one
+  verifiednumber(teamId) -> team(id) foreign-key many-to-one
+  verifiednumber(userId) -> users(id) foreign-key many-to-one
+  watchlistaudit(watchlistId) -> watchlist(id) foreign-key many-to-one
+  watchlisteventaudit(eventTypeId) -> eventtype(id) inferred many-to-one
+  watchlisteventaudit(watchlistId) -> watchlist(id) inferred many-to-one
+  webhook(appId) -> app(slug) foreign-key many-to-one
+  webhook(eventTypeId) -> eventtype(id) foreign-key many-to-one
+  webhook(platformOAuthClientId) -> platformoauthclient(id) foreign-key many-to-one
+  webhook(teamId) -> team(id) foreign-key many-to-one
+  webhook(userId) -> users(id) foreign-key many-to-one
+  webhookscheduledtriggers(appId) -> app(slug) inferred many-to-one
+  webhookscheduledtriggers(bookingId) -> booking(id) foreign-key many-to-one
+  webhookscheduledtriggers(webhookId) -> webhook(id) foreign-key many-to-one
+  wrongassignmentreport(bookingUid) -> booking(uid) foreign-key one-to-one
+  wrongassignmentreport(reportedById) -> users(id) foreign-key many-to-one
+  wrongassignmentreport(reviewedById) -> users(id) foreign-key many-to-one
+  wrongassignmentreport(teamId) -> team(id) foreign-key many-to-one
+engines: postgresql, redis
+warnings: 0

@@ -11,18 +11,22 @@ import './main.css';
 import type { HostMessage, Layout } from '../core/protocol';
 import type { SchemaModel } from '../core/model';
 import { qualifiedName } from '../core/format';
+import { emptyNotes, type Notes } from '../core/notes';
 
 import { post, vscode } from './vscode';
-import { autoColumnMode, sanitizeUiState, type ColumnMode, type Direction, type Filters, type UiState } from './types';
+import { autoColumnMode, defaultFilters, sanitizeUiState, type ColumnMode, type Direction, type Filters, type UiState } from './types';
 import { computeVisibleGraph, schemaKey, type VisibleGraph } from './graphModel';
 import { computeLayout, type SizedNode } from './layout';
 import { computeCardMetrics, type CardMetrics } from './cardLayout';
 import { Measurer, readFonts } from './measure';
 import { boundsOf, type Rect } from './geometry';
 import { Diagram } from './diagram';
-import { Toolbar, type FilterOption } from './toolbar';
+import { Toolbar, type ExportKind, type FilterOption } from './toolbar';
+import { svgToPngBase64 } from './png';
+import type { SavedView } from '../core/views';
 import { SidePanel } from './sidePanel';
 import { Overlays } from './overlays';
+import { DiffView } from './diffView';
 import { buildSearchItems, matchedEntityIds, search, type SearchItem } from './search';
 
 interface Pos {
@@ -44,6 +48,8 @@ class App {
   /** Manual positions (from the host's saved layout + this session's drags). */
   private manual: Layout = {};
   private firstModel = true;
+  private notes: Notes = emptyNotes();
+  private notesTimer = 0;
   private pendingFocus: string | null = null;
 
   private searchItems: SearchItem[] = [];
@@ -60,9 +66,14 @@ class App {
   private readonly toolbar: Toolbar;
   private readonly sidePanel: SidePanel;
   private readonly overlays: Overlays;
+  private readonly diffView = new DiffView({
+    onCopyMarkdown: () => post({ type: 'copyDiffMarkdown' }),
+    onClose: () => this.diffView.hide(),
+  });
 
   constructor(root: HTMLElement) {
     this.state = sanitizeUiState(vscode.getState());
+    if (!vscode.getState() && window.innerWidth < 640) this.state.sidePanelOpen = false; // tiny panel: start with the diagram
 
     this.overlays = new Overlays({
       onRescan: () => post({ type: 'rescan' }),
@@ -81,6 +92,9 @@ class App {
         onFiltersChange: (f) => this.setFilters(f),
         onRelayout: () => this.relayout(),
         onExport: (kind) => this.onExport(kind),
+        onApplyView: (name) => this.setActiveView(name),
+        onSaveView: (name) => this.saveView(name),
+        onDeleteView: (name) => this.deleteView(name),
         onRescan: () => post({ type: 'rescan' }),
         onTogglePanel: () => this.togglePanel(),
       },
@@ -89,6 +103,7 @@ class App {
     this.sidePanel = new SidePanel({
       onJump: (id) => this.selectEntity(id, true),
       onOpenRef: (ref) => post({ type: 'openSource', ref }),
+      onNotesChange: (notes) => this.onNotesEdited(notes),
       onShowLog: () => post({ type: 'showLog' }),
       onClose: () => this.togglePanel(false),
     });
@@ -97,13 +112,13 @@ class App {
     stage.className = 'stage';
     const diagramHost = document.createElement('div');
     diagramHost.className = 'diagram-host';
-    stage.append(diagramHost, this.overlays.el, this.overlays.busyChip);
+    stage.append(diagramHost, this.overlays.notice, this.overlays.el, this.overlays.busyChip);
 
     const main = document.createElement('div');
     main.className = 'main';
     main.append(stage, this.sidePanel.el);
 
-    root.append(this.toolbar.el, main, this.overlays.liveRegion);
+    root.append(this.toolbar.el, main, this.overlays.liveRegion, this.diffView.el);
 
     this.diagram = new Diagram(diagramHost, {
       onSelect: (id) => this.onDiagramSelect(id),
@@ -127,10 +142,42 @@ class App {
     if (m.type === 'status') {
       this.overlays.update(m.status, m.message, !!this.model);
     } else if (m.type === 'model') {
+      this.notes = m.notes ?? emptyNotes();
+      this.sidePanel.setNotes(this.notes);
+      this.views = m.views ?? [];
+      if (this.activeView && !this.views.some((v) => v.name === this.activeView)) this.activeView = null;
+      this.toolbar.setViews(this.views, this.activeView);
       this.onModel(m.model, m.layout, m.focus);
+    } else if (m.type === 'views') {
+      this.setViews(m.views);
+    } else if (m.type === 'applyView') {
+      this.setActiveView(m.name ?? null);
+    } else if (m.type === 'exportPng') {
+      this.exportPng();
+    } else if (m.type === 'notes') {
+      this.notes = m.notes;
+      this.sidePanel.setNotes(this.notes);
+      this.refreshNotes();
     } else if (m.type === 'focus') {
       this.focusEntity(m.entityId);
+    } else if (m.type === 'diff') {
+      this.diffView.show(m.diff, m.base, m.head);
     }
+  }
+
+  private onNotesEdited(notes: Notes): void {
+    this.notes = notes;
+    post({ type: 'saveNotes', notes });
+    this.refreshNotes();
+  }
+
+  /** Redraws the cards (note markers / tooltips) once the user is not typing in a note field. */
+  private refreshNotes(): void {
+    window.clearTimeout(this.notesTimer);
+    this.notesTimer = window.setTimeout(() => {
+      if (this.sidePanel.isEditing()) this.refreshNotes();
+      else this.rebuild({ reason: 'layout' });
+    }, 300);
   }
 
   private onModel(model: SchemaModel, layout: Layout, focus: string | undefined): void {
@@ -175,7 +222,7 @@ class App {
 
   private rebuild(opts: { reason: 'model' | 'filters' | 'layout' | 'relayout'; fit?: boolean }): void {
     if (!this.model || !this.measurer) return;
-    const graph = computeVisibleGraph(this.model, this.state.filters, this.state.selection);
+    const graph = computeVisibleGraph(this.model, this.state.filters, this.state.selection, this.viewIds());
     this.visible = graph;
 
     const metrics = new Map<string, CardMetrics>();
@@ -192,6 +239,7 @@ class App {
       this.diagram.setGraph(graph, metrics, positions, {
         accentClassOf: (id) => this.accentOf(id),
         nameOf: (id) => this.nameOf(id),
+        notes: this.notes,
       });
       this.afterRender(opts);
       this.overlays.setBusy(null);
@@ -206,15 +254,17 @@ class App {
   }
 
   private afterRender(opts: { reason: string; fit?: boolean }): void {
-    // Viewport: fit on first model load (unless a saved viewport exists) and on explicit relayout/fit.
+    // Viewport: fit on first model load (unless a usable saved viewport exists) and on explicit relayout/fit.
+    // A saved viewport from a different model may leave the diagram off-screen; fit instead then.
     if (opts.fit || opts.reason === 'relayout') {
       this.diagram.fit(opts.reason !== 'model');
-    } else if (this.firstModel && this.state.viewport) {
+    } else if (this.firstModel && this.state.viewport && this.diagram.isInView(this.state.viewport)) {
       this.diagram.setViewport(this.state.viewport);
     } else if (this.firstModel) {
       this.diagram.fit(false);
     }
     this.firstModel = false;
+    this.updateNotice();
 
     // Persist the computed layout so a reload keeps the same arrangement.
     this.state.positions = this.diagram.allPositions();
@@ -233,6 +283,27 @@ class App {
 
     this.reapplySearch();
     this.schedulePersist();
+  }
+
+  /** Explains an empty diagram: nothing defined, or everything filtered out. */
+  private updateNotice(): void {
+    const shown = this.visible?.entities.length ?? 0;
+    this.diagram.setMinimapVisible(!!this.model && shown > 0);
+    if (!this.model || shown > 0) {
+      this.overlays.setNotice(null);
+      return;
+    }
+    if (this.model.entities.length === 0) {
+      const n = this.model.enums.length;
+      this.overlays.setNotice(n ? `This model defines no tables - only ${n} enum${n === 1 ? '' : 's'} (listed in the side panel).` : 'This model defines no tables.');
+    } else {
+      this.overlays.setNotice('No tables match the current filters.', { label: 'Clear filters', run: () => this.clearFilters() });
+    }
+  }
+
+  private clearFilters(): void {
+    this.setFilters(defaultFilters());
+    this.toolbar.setFilters(this.state.filters);
   }
 
   /** Positions already known for the current nodes (session-persisted + manual overrides). */
@@ -304,6 +375,7 @@ class App {
   }
 
   private focusEntity(id: string): void {
+    if (!this.entitiesById.has(id)) return; // unknown id (stale link, entity removed by a rescan)
     if (!this.visible?.ids.has(id)) {
       // The entity is filtered out — reveal it by clearing focus mode so it can be shown.
       if (this.state.filters.focusHops > 0) {
@@ -388,13 +460,66 @@ class App {
     this.rebuild({ reason: 'relayout' });
   }
 
-  private onExport(kind: 'markdown' | 'mermaid' | 'svg'): void {
+  private onExport(kind: ExportKind): void {
     if (kind === 'markdown') post({ type: 'exportMarkdown' });
+    else if (kind === 'dbml' || kind === 'plantuml') post({ type: 'copyText', format: kind, ...this.visibleSubset() });
+    else if (kind === 'png') this.exportPng();
     else if (kind === 'mermaid') post({ type: 'copyMermaid', ...this.visibleSubset() });
     else post({ type: 'exportSvg', svg: this.diagram.buildExportSvg() });
   }
 
   /** `copyMermaid` wants entityIds only when a subset is shown; omit when all are visible. */
+  private viewIds(): Set<string> | null {
+    const v = this.activeView ? this.views.find((x) => x.name === this.activeView) : undefined;
+    return v ? new Set(v.entities) : null;
+  }
+
+  private exportPng(): void {
+    const svg = this.diagram.buildExportSvg();
+    const size = /<svg[^>]*\swidth="(\d+)"[^>]*\sheight="(\d+)"/.exec(svg);
+    const w = size ? Number(size[1]) : 800;
+    const h = size ? Number(size[2]) : 600;
+    svgToPngBase64(svg, w, h).then(
+      (data) => post({ type: 'savePng', data }),
+      () => this.overlays.setNotice('Could not render the PNG. Try Save SVG instead.'),
+    );
+  }
+
+  // -- Saved views --
+
+  private activeView: string | null = null;
+  private views: SavedView[] = [];
+
+  private setViews(views: SavedView[]): void {
+    this.views = views;
+    if (this.activeView && !views.some((v) => v.name === this.activeView)) this.setActiveView(null);
+    else this.toolbar.setViews(views, this.activeView);
+  }
+
+  private setActiveView(name: string | null): void {
+    const found = name === null ? undefined : this.views.find((v) => v.name === name);
+    this.activeView = found ? found.name : null;
+    this.toolbar.setViews(this.views, this.activeView);
+    this.rebuild({ reason: 'filters', fit: true });
+  }
+
+  private saveView(name: string): void {
+    if (!this.model || !this.visible) return;
+    const ids = this.diagram.visibleEntityIds();
+    if (!ids.length) return;
+    const views = [...this.views.filter((v) => v.name.toLowerCase() !== name.toLowerCase()), { name, entities: ids }];
+    this.views = views;
+    post({ type: 'saveViews', views });
+    this.activeView = name;
+    this.toolbar.setViews(views, name);
+  }
+
+  private deleteView(name: string): void {
+    const views = this.views.filter((v) => v.name !== name);
+    post({ type: 'saveViews', views });
+    this.setViews(views);
+  }
+
   private visibleSubset(): { entityIds?: string[] } {
     if (!this.model || !this.visible) return {};
     const all = this.model.entities.length;
@@ -411,7 +536,7 @@ class App {
   private applyPanelVisibility(): void {
     // Without a model (empty / error / first scan) there is nothing to show in the panel or minimap.
     this.sidePanel.el.classList.toggle('hidden', !this.state.sidePanelOpen || !this.model);
-    this.diagram?.setMinimapVisible(!!this.model);
+    this.diagram?.setMinimapVisible(!!this.model && (this.visible?.entities.length ?? 1) > 0);
   }
 
   // ── Manual move / persistence ──────────────────────────────────────────────────────────────────

@@ -1,0 +1,18 @@
+entities: 6
+  followers [table]: follower_id, followed_id
+  message [table]: id, sender_id, recipient_id, body, timestamp
+  notification [table]: id, name, user_id, timestamp, payload_json
+  post [table]: id, body, timestamp, user_id, language
+  task [table]: id, name, description, user_id, complete
+  user [table]: id, username, email, password_hash, about_me, last_seen, last_message_read_time, token, token_expiration
+relations: 8
+  followers(followed_id) -> user(id) foreign-key many-to-one
+  followers(follower_id) -> user(id) foreign-key many-to-one
+  message(recipient_id) -> user(id) foreign-key many-to-one
+  message(sender_id) -> user(id) foreign-key many-to-one
+  notification(user_id) -> user(id) foreign-key many-to-one
+  post(user_id) -> user(id) foreign-key many-to-one
+  task(user_id) -> user(id) foreign-key many-to-one
+  user(id) -> user(id) orm many-to-many
+engines: elasticsearch, postgresql, redis
+warnings: 0

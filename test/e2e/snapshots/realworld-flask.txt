@@ -1,0 +1,25 @@
+entities: 8
+  article [table]: id, slug, title, description, body, createdAt, updatedAt, author_id
+  comment [table]: id, body, createdAt, updatedAt, author_id, article_id
+  favoritor_assoc [table]: favoriter, favorited_article
+  followers_assoc [table]: follower, followed_by
+  tag_assoc [table]: tag, article
+  tags [table]: id, tagname
+  userprofile [table]: id, user_id
+  users [table]: id, username, email, password, created_at, updated_at, bio, image
+relations: 13
+  article(author_id) -> userprofile(id) foreign-key many-to-one
+  article(id) -> tags(id) orm many-to-many
+  article(id) -> userprofile(id) orm many-to-many
+  comment(article_id) -> article(id) foreign-key many-to-one
+  comment(author_id) -> userprofile(id) foreign-key many-to-one
+  favoritor_assoc(favorited_article) -> article(id) foreign-key many-to-one
+  favoritor_assoc(favoriter) -> userprofile(id) foreign-key many-to-one
+  followers_assoc(followed_by) -> userprofile(user_id) foreign-key many-to-one
+  followers_assoc(follower) -> userprofile(user_id) foreign-key many-to-one
+  tag_assoc(article) -> article(id) foreign-key many-to-one
+  tag_assoc(tag) -> tags(id) foreign-key many-to-one
+  userprofile(id) -> userprofile(id) orm many-to-many
+  userprofile(user_id) -> users(id) foreign-key many-to-one
+engines: postgresql, sqlite
+warnings: 0

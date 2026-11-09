@@ -40,6 +40,7 @@ entity-relationship map. You don't need a database connection or any configurati
 | Python | Django, SQLAlchemy (incl. Flask-SQLAlchemy & Alembic), SQLModel, Peewee, Tortoise ORM |
 | Ruby / PHP / Elixir | Rails (`schema.rb`, migrations, models), Laravel (migrations & Eloquent), Doctrine, Ecto |
 | Go / Rust | GORM, Ent, Bun, SeaORM |
+| Mappings & API schemas | Hibernate XML (*.hbm.xml), Doctrine XML/YAML, GraphQL SDL (only types with a database directive such as @model), ZenStack schema.zmodel, MongoDB `` validators in createCollection |
 | JVM / .NET | JPA / Hibernate (Java & Kotlin), Exposed, Entity Framework Core (models, DbContext, migrations, snapshots) |
 
 ## Commands
@@ -50,7 +51,38 @@ entity-relationship map. You don't need a database connection or any configurati
 | `DBNext: Rescan Workspace` | Scan again from scratch |
 | `DBNext: Export DB Map to Markdown (Mermaid)` | Write `DBMAP.md` (path configurable) |
 | `DBNext: Copy Mermaid ER Diagram` | Copy an `erDiagram` to the clipboard |
+| `DBNext: Copy DBML` / `Copy PlantUML ER Diagram` | Copy the schema as DBML or PlantUML |
+| `DBNext: Export DB Map as PNG` | Save the diagram as a PNG image |
+| `DBNext: Select Saved View` | Show only a named subset of tables (see below) |
+| `DBNext: Compare with Git Ref…` / `Copy Schema Diff as Markdown` | Diff the current schema against a branch, tag or commit; copy the diff as Markdown |
+| `DBNext: Compare with Live Database (read-only)` / `Forget Live Database Password` | Opt-in, desktop only (see below) |
 | `DBNext: Show Scan Log` | What was scanned, found and skipped |
+
+### Saved views
+
+In the map, arrange the filters/search so only the tables you care about are visible, open **Views**, type a name
+(for example "billing") and press **Save view**. Views are stored in `.dbnext/views.json` (commit it to share them) and
+are selectable from the toolbar or `DBNext: Select Saved View`. Export > Copy Mermaid/DBML/PlantUML honour the active view.
+
+### Notes
+
+Select a table in the map to add a note. Notes are stored in `.dbnext/notes.json` and included in exports.
+
+### Live database comparison (opt-in)
+
+Set `dbnext.liveDatabase.enabled` (machine scope, desktop only, off by default) plus engine (PostgreSQL or MySQL/MariaDB), host, port, database and user. `DBNext: Compare with Live Database` runs read-only catalog queries and shows the differences from the code-derived model. The password is kept in VS Code SecretStorage, never in settings. Use a read-only account.
+
+## Command line (CI)
+
+The same scanner is available as a CLI, e.g. to keep `DBMAP.md` up to date in CI:
+
+```sh
+npx dbnext scan . --out DBMAP.md                # Markdown + Mermaid (default)
+npx dbnext scan ./services/api --format dbml    # md | mermaid | dbml | plantuml | json
+```
+
+From a clone, build it with `npm run build:prod` and run `node dist/cli.js scan <dir>`. The CLI is not part of the
+extension package (`dist/cli.js` is excluded from the `.vsix`).
 
 Keyboard shortcuts in the map: `+` / `-` zoom, `0` fit, `F` focus the selection, `Esc` clear,
 `Enter` / `Shift+Enter` cycle through search results, arrow keys move between connected tables.
@@ -72,7 +104,7 @@ Keyboard shortcuts in the map: `+` / `-` zoom, `0` fit, `F` focus the selection,
 
 ## How it works
 
-DBNext reads source files and never connects to a database. Each file is parsed by a lightweight
+DBNext reads source files and, unless you enable the opt-in live database comparison, never connects to a database. Each file is parsed by a lightweight
 parser for its technology. The results are merged: migrations are replayed in order, current model
 definitions win over the migration history, and ORM naming conventions decide the real table and
 column names. Everything runs locally inside VS Code and nothing is sent anywhere. The extension

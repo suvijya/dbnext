@@ -1,0 +1,8 @@
+entities: 3
+  doc:posts [collection]: _id, user, text, name, avatar, likes, comments, date
+  doc:profiles [collection]: _id, user, company, website, location, status, skills, bio, githubusername, experience, education, social, date
+  doc:users [collection]: _id, name, email, password, avatar, date
+relations: 1
+  doc:profiles(user) -> doc:users(_id) orm many-to-one
+engines: mongodb
+warnings: 0

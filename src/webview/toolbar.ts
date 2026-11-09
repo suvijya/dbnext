@@ -6,6 +6,7 @@
 
 import { button, el } from './dom';
 import { uiIcon } from './icons';
+import type { SavedView } from '../core/views';
 import type { ColumnMode, Direction, Filters } from './types';
 
 export interface FilterOption {
@@ -28,10 +29,15 @@ export interface ToolbarCallbacks {
   onColumnMode(mode: ColumnMode): void;
   onFiltersChange(filters: Filters): void;
   onRelayout(): void;
-  onExport(kind: 'markdown' | 'mermaid' | 'svg'): void;
+  onExport(kind: ExportKind): void;
+  onApplyView(name: string | null): void;
+  onSaveView(name: string): void;
+  onDeleteView(name: string): void;
   onRescan(): void;
   onTogglePanel(): void;
 }
+
+export type ExportKind = 'markdown' | 'mermaid' | 'svg' | 'png' | 'dbml' | 'plantuml';
 
 export class Toolbar {
   readonly el: HTMLElement;
@@ -43,6 +49,10 @@ export class Toolbar {
   private readonly filtersBtn: HTMLButtonElement;
   private readonly filtersPopover: HTMLElement;
   private readonly exportBtn: HTMLButtonElement;
+  private readonly viewsBtn: HTMLButtonElement;
+  private readonly viewsPopover: HTMLElement;
+  private views: SavedView[] = [];
+  private activeView: string | null = null;
   private readonly exportPopover: HTMLElement;
 
   private filters: Filters;
@@ -112,6 +122,13 @@ export class Toolbar {
     this.filtersPopover.hidden = true;
     filterGroup.append(this.filtersBtn, this.filtersPopover);
 
+    // Saved views
+    const viewsGroup = el('div', { class: 'tb-group tb-popover-host' });
+    this.viewsBtn = button({ class: 'tb-btn tb-text', label: 'Views', icon: uiIcon('columns'), title: 'Saved views', attrs: { 'aria-haspopup': 'true', 'aria-expanded': 'false' }, on: { click: () => this.togglePopover('views') } });
+    this.viewsPopover = el('div', { class: 'tb-popover', attrs: { role: 'dialog', 'aria-label': 'Saved views' } });
+    this.viewsPopover.hidden = true;
+    viewsGroup.append(this.viewsBtn, this.viewsPopover);
+
     // Re-layout
     const relayoutBtn = button({ class: 'tb-btn tb-text', label: 'Re-layout', icon: uiIcon('relayout'), title: 'Reset node positions and re-layout', attrs: { 'aria-label': 'Re-layout' }, on: { click: () => this.cb.onRelayout() } });
 
@@ -123,6 +140,9 @@ export class Toolbar {
     this.exportPopover.append(
       this.menuItem('Export Markdown…', 'file', () => this.pick('markdown')),
       this.menuItem('Copy Mermaid (visible)', 'copy', () => this.pick('mermaid')),
+      this.menuItem('Save PNG…', 'download', () => this.pick('png')),
+      this.menuItem('Copy DBML (visible)', 'copy', () => this.pick('dbml')),
+      this.menuItem('Copy PlantUML (visible)', 'copy', () => this.pick('plantuml')),
       this.menuItem('Save SVG…', 'download', () => this.pick('svg')),
     );
     exportGroup.append(this.exportBtn, this.exportPopover);
@@ -133,7 +153,7 @@ export class Toolbar {
     const panelBtn = button({ class: 'tb-btn', icon: uiIcon('panel'), title: 'Toggle details panel', attrs: { 'aria-label': 'Toggle details panel' }, on: { click: () => this.cb.onTogglePanel() } });
     endGroup.append(rescanBtn, panelBtn);
 
-    this.el.append(searchWrap, view, layoutGroup, filterGroup, relayoutBtn, exportGroup, endGroup);
+    this.el.append(searchWrap, view, layoutGroup, filterGroup, viewsGroup, relayoutBtn, exportGroup, endGroup);
 
     document.addEventListener('pointerdown', (e) => {
       if (!this.el.contains(e.target as Node)) this.closePopovers();
@@ -151,18 +171,22 @@ export class Toolbar {
     return button({ class: 'tb-menu-item', label, icon: uiIcon(iconName), attrs: { role: 'menuitem' }, on: { click: onClick } });
   }
 
-  private pick(kind: 'markdown' | 'mermaid' | 'svg'): void {
+  private pick(kind: ExportKind): void {
     this.closePopovers();
     this.cb.onExport(kind);
   }
 
-  private togglePopover(which: 'filters' | 'export'): void {
-    const open = which === 'filters' ? this.filtersPopover.hidden : this.exportPopover.hidden;
+  private togglePopover(which: 'filters' | 'export' | 'views'): void {
+    const open = which === 'filters' ? this.filtersPopover.hidden : which === 'views' ? this.viewsPopover.hidden : this.exportPopover.hidden;
     this.closePopovers();
     if (which === 'filters' && open) {
       this.renderFilters();
       this.filtersPopover.hidden = false;
       this.filtersBtn.setAttribute('aria-expanded', 'true');
+    } else if (which === 'views' && open) {
+      this.renderViews();
+      this.viewsPopover.hidden = false;
+      this.viewsBtn.setAttribute('aria-expanded', 'true');
     } else if (which === 'export' && open) {
       this.exportPopover.hidden = false;
       this.exportBtn.setAttribute('aria-expanded', 'true');
@@ -172,6 +196,8 @@ export class Toolbar {
   private closePopovers(): void {
     this.filtersPopover.hidden = true;
     this.exportPopover.hidden = true;
+    this.viewsPopover.hidden = true;
+    this.viewsBtn.setAttribute('aria-expanded', 'false');
     this.filtersBtn.setAttribute('aria-expanded', 'false');
     this.exportBtn.setAttribute('aria-expanded', 'false');
   }
@@ -207,6 +233,47 @@ export class Toolbar {
     this.schemas = schemas;
     this.sources = sources;
     this.engines = engines;
+  }
+
+  setViews(views: SavedView[], active: string | null): void {
+    this.views = views;
+    this.activeView = active;
+    const label = this.viewsBtn.lastChild;
+    if (label && label.nodeType === Node.TEXT_NODE) label.textContent = active ? `Views: ${active}` : 'Views';
+    if (!this.viewsPopover.hidden) this.renderViews();
+  }
+
+  private renderViews(): void {
+    const pop = this.viewsPopover;
+    while (pop.firstChild) pop.removeChild(pop.firstChild);
+    const pickView = (name: string | null): void => {
+      this.closePopovers();
+      this.cb.onApplyView(name);
+    };
+    const all = button({ class: 'tb-menu-item', label: this.activeView === null ? '✓ All tables' : 'All tables', attrs: { role: 'menuitem' }, on: { click: () => pickView(null) } });
+    pop.appendChild(all);
+    for (const v of this.views) {
+      const row = el('div', { class: 'view-row' });
+      row.append(
+        button({ class: 'tb-menu-item', label: `${v.name === this.activeView ? '✓ ' : ''}${v.name} (${v.entities.length})`, attrs: { role: 'menuitem' }, on: { click: () => pickView(v.name) } }),
+        button({ class: 'tb-btn', label: '×', title: `Delete view ${v.name}`, attrs: { 'aria-label': `Delete view ${v.name}` }, on: { click: () => this.cb.onDeleteView(v.name) } }),
+      );
+      pop.appendChild(row);
+    }
+    const input = el('input', { class: 'tb-input', type: 'text', attrs: { placeholder: 'Name for the visible tables', 'aria-label': 'Saved view name', maxlength: '80' } });
+    const save = (): void => {
+      const name = input.value.trim();
+      if (!name) return;
+      this.cb.onSaveView(name);
+      input.value = '';
+    };
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        save();
+      }
+    });
+    pop.appendChild(el('div', { class: 'view-save' }, [input, button({ class: 'tb-btn tb-text', label: 'Save view', title: 'Save the visible tables as a named view', on: { click: save } })]));
   }
 
   setFilters(filters: Filters): void {

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { columnKeys, columnType, entityKindLabel, enumSummary, qualifiedName, relationsByEntity, type EntityRelations } from '../core/format';
+import { columnKeys, columnType, entityKindLabel, enumSummary, isUncertain, provenanceTextLines, qualifiedName, relationsByEntity, type EntityRelations } from '../core/format';
 import {
   ENGINES,
   SOURCE_LABELS,
@@ -12,6 +12,7 @@ import {
   type ScanWarning,
   type SchemaModel,
   type SourceRef,
+  type Provenance,
 } from '../core/model';
 
 interface NodeBase {
@@ -118,6 +119,13 @@ const { Collapsed, Expanded, None } = vscode.TreeItemCollapsibleState;
 /** Escapes Markdown so text from scanned files renders literally in tooltips. */
 function esc(text: string): string {
   return text.replace(/[\\`*_{}[\]()#+\-.!|<>~]/g, '\\$&');
+}
+
+/** Markdown "Why is this here?" block for a tooltip; model text is escaped. */
+function whyMarkdown(p: Provenance | undefined): string {
+  if (!p) return '';
+  const lines = provenanceTextLines(p).map((l, i) => (i === 0 ? `**Why is this here?** ${esc(l)}` : `- ${esc(l)}`));
+  return `\n\n${lines.join('  \n')}`;
 }
 
 function code(text: string): string {
@@ -412,6 +420,9 @@ export class SchemaTreeProvider implements vscode.TreeDataProvider<SchemaNode>, 
       lines.push(`Indexes: ${list.join('; ')}${e.indexes.length > 8 ? '; …' : ''}`);
     }
     md.appendMarkdown(lines.join('  \n'));
+    const why = whyMarkdown(e.provenance);
+    if (why) md.appendMarkdown(why);
+    if (isUncertain(e.provenance)) item.description += ' · ?';
     item.tooltip = md;
     return item;
   }
@@ -445,6 +456,8 @@ export class SchemaTreeProvider implements vscode.TreeDataProvider<SchemaNode>, 
     if (en) lines.push(`Enum ${code(en.name)}: ${esc(enumSummary(en))}`);
     if (c.comment) lines.push(esc(c.comment));
     md.appendMarkdown(lines.join('  \n'));
+    md.appendMarkdown(whyMarkdown(c.provenance));
+    if (isUncertain(c.provenance)) item.description += '  ?';
     item.tooltip = md;
 
     const ref = c.source ?? node.entity.source;
@@ -487,7 +500,9 @@ export class SchemaTreeProvider implements vscode.TreeDataProvider<SchemaNode>, 
     if (r.cardinality !== 'many-to-many') lines.push(`${code(r.fromColumns.join(', ') || '?')} → ${code(r.toColumns.join(', ') || '?')}`);
     if (r.onDelete) lines.push(`On delete: ${esc(r.onDelete)}`);
     lines.push('Click to jump to the related table.');
-    item.tooltip = new vscode.MarkdownString(lines.join('  \n'));
+    const relTip = new vscode.MarkdownString(lines.join('  \n'));
+    relTip.appendMarkdown(whyMarkdown(r.provenance));
+    item.tooltip = relTip;
     item.command = { command: 'dbnext.revealEntity', title: 'Reveal Related Table', arguments: [other] };
     return item;
   }

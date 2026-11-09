@@ -4,6 +4,7 @@
  */
 
 import { ENGINES, SOURCE_LABELS, type Column, type Entity, type Relation, type SchemaModel, type SourceRef } from './model';
+import { columnNote, tableNote, type Notes } from './notes';
 import { columnKeys, columnType, enumSummary, qualifiedName, relationsByEntity, summaryText } from './format';
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -173,6 +174,8 @@ export interface MarkdownOptions {
   /** Marketplace / homepage link shown in the header. */
   generatorUrl?: string;
   mermaid?: MermaidOptions;
+  /** User notes (.dbnext/notes.json) to include next to the schema comments. */
+  notes?: Notes;
 }
 
 /** GitHub-compatible heading slugs, unique within one document. */
@@ -193,6 +196,14 @@ class Slugger {
 function cell(text: string | undefined): string {
   if (!text) return '';
   return text.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/</g, '&lt;').replace(/\r?\n/g, ' ');
+}
+
+/** Escapes Markdown inline syntax in a name used as heading text or link label; collapses whitespace. */
+function mdName(text: string): string {
+  return text
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/[\\`*_{}[\]<>#|~&!]/g, (ch) => (ch === '<' ? '&lt;' : ch === '&' ? '&amp;' : `\\${ch}`));
 }
 
 function code(text: string | undefined): string {
@@ -233,7 +244,7 @@ function formatDate(iso: string): string {
   return `${d.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
 }
 
-function columnRow(c: Column, nameOf: (id: string) => string): string {
+function columnRow(c: Column, nameOf: (id: string) => string, note?: string): string {
   const ref = c.references
     ? `${nameOf(c.references.entity)}${c.references.column ? `.${c.references.column}` : ''}${c.references.inferred ? ' (inferred)' : ''}`
     : '';
@@ -241,6 +252,7 @@ function columnRow(c: Column, nameOf: (id: string) => string): string {
   if (c.generated) notes.push('generated');
   if (c.enumRef) notes.push(`enum ${nameOf(c.enumRef)}`);
   if (c.comment) notes.push(c.comment);
+  if (note) notes.push(`Note: ${note}`);
   return `| ${code(c.name)} | ${code(columnType(c))} | ${c.nullable && !c.primaryKey ? 'yes' : ''} | ${columnKeys(c).join(', ')} | ${code(c.default)} | ${cell(ref)} | ${cell(notes.join('; '))} |`;
 }
 
@@ -298,7 +310,7 @@ export function toMarkdown(model: SchemaModel, options: MarkdownOptions = {}): s
   out.push('| Name | Kind | Columns | Relations | Defined in |', '|---|---|---|---|---|');
   const pending: [Entity, string][] = [];
   for (const e of defined) {
-    const heading = qualifiedName(e);
+    const heading = qualifiedName(e).replace(/\s+/g, ' ').trim() || e.id;
     const slug = slugger.slug(heading);
     anchors.set(e.id, slug);
     pending.push([e, heading]);
@@ -307,14 +319,16 @@ export function toMarkdown(model: SchemaModel, options: MarkdownOptions = {}): s
     const r = rels.get(e.id);
     const count = (r?.outgoing.length ?? 0) + (r?.incoming.length ?? 0);
     const kind = e.kind === 'table' ? (e.joinTable ? 'join table' : 'table') : e.kind;
-    out.push(`| [${cell(qualifiedName(e))}](#${anchors.get(e.id)}) | ${kind} | ${e.columns.length} | ${count} | ${location(e.source, options)} |`);
+    out.push(`| [${mdName(qualifiedName(e))}](#${anchors.get(e.id)}) | ${kind} | ${e.columns.length} | ${count} | ${location(e.source, options)} |`);
   }
   out.push('');
 
   // Details
   for (const [e, heading] of pending) {
-    out.push(`### ${heading}`, '');
+    out.push(`### ${mdName(heading)}`, '');
     if (e.comment) out.push(cell(e.comment), '');
+    const note = tableNote(options.notes, e.id);
+    if (note) out.push(...note.split('\n').map((l) => `> ${l.replace(/</g, '&lt;')}`), '');
     const meta: string[] = [];
     if (e.modelNames.length) meta.push(`**Model:** ${e.modelNames.map(code).join(', ')}`);
     if (e.engine) meta.push(`**Engine:** ${ENGINES[e.engine]?.label ?? e.engine}`);
@@ -323,7 +337,7 @@ export function toMarkdown(model: SchemaModel, options: MarkdownOptions = {}): s
     out.push(meta.join(' · '), '');
     if (e.columns.length) {
       out.push('| Column | Type | Nullable | Key | Default | References | Notes |', '|---|---|---|---|---|---|---|');
-      for (const c of e.columns) out.push(columnRow(c, nameOf));
+      for (const c of e.columns) out.push(columnRow(c, nameOf, columnNote(options.notes, e.id, c.name)));
       out.push('');
     } else {
       out.push('_No columns are declared in the scanned files._', '');
@@ -333,7 +347,7 @@ export function toMarkdown(model: SchemaModel, options: MarkdownOptions = {}): s
       out.push(`**Indexes:** ${list.join('; ')}`, '');
     }
     const r = rels.get(e.id);
-    const link = (id: string) => (anchors.has(id) ? `[${cell(nameOf(id))}](#${anchors.get(id)})` : cell(nameOf(id)));
+    const link = (id: string) => (anchors.has(id) ? `[${mdName(nameOf(id))}](#${anchors.get(id)})` : mdName(nameOf(id)));
     const outgoing = (r?.outgoing ?? []).filter((x) => x.cardinality !== 'many-to-many');
     if (outgoing.length) {
       const list = outgoing.map((x) => `${x.fromColumns.map(code).join(', ') || '?'} → ${link(x.to)}${x.kind === 'inferred' ? ' _(inferred)_' : ''}`);

@@ -75,9 +75,11 @@ export function computeVisibleGraph(
   model: Pick<SchemaModel, 'entities' | 'relations'>,
   filters: Filters,
   selection: string | null,
+  /** Restrict to these entity ids (a saved view). */
+  only?: ReadonlySet<string> | null,
 ): VisibleGraph {
   const ids = new Set<string>();
-  for (const e of model.entities) if (attributeVisible(e, filters)) ids.add(e.id);
+  for (const e of model.entities) if ((!only || only.has(e.id)) && attributeVisible(e, filters)) ids.add(e.id);
 
   const edges: DrawEdge[] = [];
   for (const r of model.relations) {

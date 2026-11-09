@@ -1,0 +1,15 @@
+entities: 5
+  activity_logs [table]: id, team_id, user_id, action, timestamp, ip_address
+  invitations [table]: id, team_id, email, role, invited_by, invited_at, status
+  team_members [table]: id, user_id, team_id, role, joined_at
+  teams [table]: id, name, created_at, updated_at, stripe_customer_id, stripe_subscription_id, stripe_product_id, plan_name, subscription_status
+  users [table]: id, name, email, password_hash, role, created_at, updated_at, deleted_at
+relations: 6
+  activity_logs(team_id) -> teams(id) foreign-key many-to-one
+  activity_logs(user_id) -> users(id) foreign-key many-to-one
+  invitations(invited_by) -> users(id) foreign-key many-to-one
+  invitations(team_id) -> teams(id) foreign-key many-to-one
+  team_members(team_id) -> teams(id) foreign-key many-to-one
+  team_members(user_id) -> users(id) foreign-key many-to-one
+engines: postgresql
+warnings: 0

@@ -43,6 +43,11 @@ export const SOURCE_KINDS = [
   'efcore',
   'ecto',
   'seaorm',
+  'hibernate',
+  'doctrinemap',
+  'graphql',
+  'zenstack',
+  'mongovalidator',
 ] as const;
 
 /** Technology a schema definition was read from. Also used by the `dbnext.disabledSources` setting. */
@@ -77,6 +82,11 @@ export const SOURCE_LABELS: Readonly<Record<SourceKind, string>> = {
   efcore: 'EF Core',
   ecto: 'Ecto',
   seaorm: 'SeaORM',
+  hibernate: 'Hibernate XML',
+  doctrinemap: 'Doctrine XML/YAML',
+  graphql: 'GraphQL SDL',
+  zenstack: 'ZenStack',
+  mongovalidator: 'MongoDB validator',
 };
 
 export const ENGINE_IDS = [
@@ -162,6 +172,29 @@ export interface SourceRef {
 // Resolved model (output of resolveSchema / buildModel)
 // ─────────────────────────────────────────────────────────────────────────────────────────────
 
+/**
+ * How an item of the resolved model was derived ("Why is this here?"). Additive and optional:
+ * consumers must tolerate its absence (models saved by older versions).
+ *  - `declared`: stated explicitly in the source (DDL, explicit table name, foreign key constraint)
+ *  - `orm`: ORM association declared in code
+ *  - `inferred`: guessed from naming conventions (`user_id` -> `users.id`)
+ *  - `guessed`: a name was derived from a model name by the ORM's default naming convention
+ *  - `implied`: added because something else implies it (an association's foreign key column)
+ *  - `external`: placeholder for something referenced but not defined in the workspace
+ */
+export type Derivation = 'declared' | 'orm' | 'inferred' | 'guessed' | 'implied' | 'external';
+
+export interface Provenance {
+  derivation: Derivation;
+  confidence: 'high' | 'medium' | 'low';
+  /** Declaration sites (file, 0-based line) that contributed, at most 12. */
+  refs: SourceRef[];
+  /** Contributions of several files / technologies were combined. */
+  merged?: boolean;
+  /** Human readable explanation lines. */
+  notes: string[];
+}
+
 export interface ColumnRef {
   /** Referenced entity id. */
   entity: string;
@@ -196,6 +229,8 @@ export interface Column {
   enumRef?: string;
   /** Set by the resolver (parsers must not set it): what this column points to when it is (part of) a foreign key. */
   references?: ColumnRef;
+  /** Set by the resolver for columns that are not plainly declared (e.g. implied foreign key columns). */
+  provenance?: Provenance;
 }
 
 export interface IndexDef {
@@ -242,6 +277,8 @@ export interface Entity {
   external?: boolean;
   /** Pure junction table of a many-to-many relationship (set by the resolver). */
   joinTable?: boolean;
+  /** Set by the resolver: where this entity comes from and how certain it is. */
+  provenance?: Provenance;
 }
 
 export type Cardinality = 'many-to-one' | 'one-to-one' | 'many-to-many';
@@ -274,6 +311,8 @@ export interface Relation {
   throughName?: string;
   sources: SourceKind[];
   source?: SourceRef;
+  /** Set by the resolver: how this relation was derived and every declaration site. */
+  provenance?: Provenance;
 }
 
 export interface EngineEvidence {

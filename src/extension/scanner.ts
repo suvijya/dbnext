@@ -29,7 +29,7 @@ interface CacheEntry {
   outcome: FileParseOutcome;
 }
 
-interface Candidate {
+export interface Candidate {
   uri: vscode.Uri;
   rel: string;
   priority: number;
@@ -135,7 +135,7 @@ export class Scanner {
     return { model, uris };
   }
 
-  private async findCandidates(config: DbNextConfig, token: vscode.CancellationToken) {
+  async findCandidates(config: DbNextConfig, token: vscode.CancellationToken) {
     const exclude = globGroup(excludePatterns(config));
     const include = globGroup(includePatterns(this.registry));
     const priority = globGroup(priorityPatterns(this.registry));

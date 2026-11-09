@@ -1,0 +1,17 @@
+entities: 7
+  articles [table]: id, title, slug, body, description, favorites_count, user_id, created_at, updated_at
+  comments [table]: id, body, user_id, article_id, created_at, updated_at
+  favorites [table]: id, user_id, article_id, created_at, updated_at
+  follows [table]: id, followable_id, followable_type, follower_id, follower_type, blocked, created_at, updated_at
+  taggings [table]: id, tag_id, taggable_id, taggable_type, tagger_id, tagger_type, context, created_at
+  tags [table]: id, name, taggings_count
+  users [table]: id, email, encrypted_password, reset_password_token, reset_password_sent_at, remember_created_at, sign_in_count, current_sign_in_at, last_sign_in_at, current_sign_in_ip, last_sign_in_ip, created_at, updated_at, username, image, bio
+relations: 6
+  articles(user_id) -> users(id) foreign-key many-to-one
+  comments(article_id) -> articles(id) foreign-key many-to-one
+  comments(user_id) -> users(id) foreign-key many-to-one
+  favorites(article_id) -> articles(id) foreign-key many-to-one
+  favorites(user_id) -> users(id) foreign-key many-to-one
+  taggings(tag_id) -> tags(id) inferred many-to-one
+engines: sqlite
+warnings: 1

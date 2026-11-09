@@ -1,0 +1,12 @@
+entities: 4
+  symfony_demo_comment [table]: id, post_id, content, published_at, author_id
+  symfony_demo_post [table]: id, title, slug, summary, content, published_at, author_id
+  symfony_demo_tag [table]: id, name
+  symfony_demo_user [table]: id, full_name, username, email, password, roles
+relations: 4
+  symfony_demo_comment(author_id) -> symfony_demo_user(id) orm many-to-one
+  symfony_demo_comment(post_id) -> symfony_demo_post(id) orm many-to-one
+  symfony_demo_post(author_id) -> symfony_demo_user(id) orm many-to-one
+  symfony_demo_post(id) -> symfony_demo_tag(id) orm many-to-many
+engines: 
+warnings: 0

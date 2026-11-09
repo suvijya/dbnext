@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0
+
+- New parsers: Hibernate XML mappings (`*.hbm.xml`), Doctrine XML/YAML mappings, GraphQL SDL (types with a
+  database directive such as `@model`), ZenStack `schema.zmodel` and MongoDB `createCollection` validators.
+- Export: copy DBML and PlantUML, export the diagram as PNG.
+- Saved views (`.dbnext/views.json`) and table notes (`.dbnext/notes.json`); exports honour the active view.
+- Schema diff against a Git ref, with a diff view in the map and "Copy Schema Diff as Markdown".
+- Opt-in, read-only live database comparison for PostgreSQL and MySQL/MariaDB (desktop only, password in SecretStorage).
+- Source provenance details, "Get started" walkthrough and accessibility improvements.
+- Command line: `dbnext scan <dir> --format md|mermaid|dbml|plantuml|json` (repository only, not in the `.vsix`).
 ## 0.1.0
 
 First release.

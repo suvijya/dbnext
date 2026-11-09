@@ -33,6 +33,7 @@ import {
   type FileResult,
   type IndexDef,
   type ParseResult,
+  type Provenance,
   type RawEntity,
   type RawEnum,
   type RawRelation,
@@ -99,6 +100,13 @@ function push<K, V>(map: Map<K, V[]>, key: K, value: V): void {
   const list = map.get(key);
   if (list) list.push(value);
   else map.set(key, [value]);
+}
+
+const MAX_REFS = 12;
+
+function addRef(list: SourceRef[], ref: SourceRef | undefined): void {
+  if (!ref || list.length >= MAX_REFS || list.some((x) => x.file === ref.file && x.line === ref.line)) return;
+  list.push({ file: ref.file, line: ref.line });
 }
 
 function addUnique<T>(list: T[], value: T): void {
@@ -530,6 +538,8 @@ interface WEntity {
   aliases?: string[];
   /** Files whose raw entities contributed at least one column. */
   columnFiles?: string[];
+  /** Source locations of every raw entity that contributed (provenance). */
+  refs?: SourceRef[];
   external?: boolean;
   joinTable?: boolean;
 }
@@ -651,6 +661,7 @@ class Store {
     }
     addUnique(e.sources, item.kind);
     addUnique(e.files, item.file);
+    addRef((e.refs ??= []), r.source);
     if (r.comment !== undefined && (this.newWins || e.comment === undefined)) e.comment = r.comment;
     if (!e.engine && r.engine) e.engine = r.engine;
     if (!e.group && r.group) e.group = r.group;
@@ -997,6 +1008,7 @@ function mergeGuessedInto(t: WEntity, e: WEntity): void {
   for (const m of e.models) if (!t.models.some((x) => x.kind === m.kind && same(x.name, m.name))) t.models.push(m);
   for (const k of e.sources) addUnique(t.sources, k);
   for (const f of e.files) addUnique(t.files, f);
+  for (const r of e.refs ?? []) addRef((t.refs ??= []), r);
   if (e.primaryScore > t.primaryScore && e.primary) {
     t.primary = e.primary;
     t.primaryScore = e.primaryScore;
@@ -1034,8 +1046,11 @@ function mergeDefinitionOverMigration(d: WEntity, m: WEntity): WEntity {
   for (const k of m.sources) addUnique(sources, k);
   const files = [...d.files];
   for (const f of m.files) addUnique(files, f);
+  const refs: SourceRef[] = [];
+  for (const r of [...(d.refs ?? []), ...(m.refs ?? [])]) addRef(refs, r);
   return {
     ...d,
+    refs,
     columns,
     indexes,
     models,
@@ -1062,6 +1077,8 @@ class Linker {
   readonly byKey = new Map<string, WEntity>();
   private readonly byName = new Map<string, WEntity[]>();
   private readonly byModel = new Map<string, { e: WEntity; kind: SourceKind }[]>();
+  /** Set by `resolve()`: the last target was found by guessing a table name from a model name. */
+  guessed = false;
 
   constructor(
     entities: Iterable<WEntity>,
@@ -1082,6 +1099,7 @@ class Linker {
   }
 
   resolve(ref: EntityRef, kind: SourceKind, ctx?: WEntity): WEntity | undefined {
+    this.guessed = false;
     const preferDoc = ctx ? ctx.kind === 'collection' : kind === 'mongoose';
     const schema = normalizeSchema(ref.schema);
     if (ref.model) {
@@ -1102,7 +1120,10 @@ class Linker {
       const guesses = new Set([defaultTableName(kind, short), snakeCase(short), pluralize(snakeCase(short)), short]);
       for (const n of guesses) {
         const v = this.name(n, schema, preferDoc, ctx);
-        if (v) return v;
+        if (v) {
+          this.guessed = true;
+          return v;
+        }
       }
     }
     return undefined;
@@ -1189,6 +1210,12 @@ interface Link {
   optional?: boolean;
   sources: SourceKind[];
   source?: SourceRef;
+  /** Every declaration site that contributed to this link (provenance). */
+  refs?: SourceRef[];
+  /** The target table was guessed from a model name. */
+  guessedTarget?: boolean;
+  /** The foreign-key columns were guessed from the target's name. */
+  guessedFk?: boolean;
 }
 
 function linkAll(stored: StoredRelation[], linker: Linker, warnings: ScanWarning[]): Link[] {
@@ -1207,7 +1234,9 @@ function linkAll(stored: StoredRelation[], linker: Linker, warnings: ScanWarning
     if (s.origin === 'migration' && from.columnsFromDefinition && r.fromColumns.length && r.cardinality !== 'many-to-many') {
       if (!r.fromColumns.every((c) => findColumnLoose(from.columns, c))) continue; // stale FK from the history
     }
-    const to = linker.resolve(r.to, s.kind, from) ?? linker.external(r.to, s.kind, r.toColumns, from);
+    let to = linker.resolve(r.to, s.kind, from);
+    const guessedTarget = !!to && linker.guessed;
+    to ??= linker.external(r.to, s.kind, r.toColumns, from);
     if (!to) continue;
     const link: Link = {
       from,
@@ -1222,7 +1251,10 @@ function linkAll(stored: StoredRelation[], linker: Linker, warnings: ScanWarning
       explicitOptional: r.optional,
       sources: [s.kind],
       source: r.source ? { ...r.source } : undefined,
+      refs: [],
+      guessedTarget,
     };
+    addRef(link.refs!, r.source);
     if (link.cardinality === 'many-to-many' && r.through) {
       link.through = linker.resolve(r.through, s.kind, from);
       link.throughName = link.through?.name ?? r.through.name ?? (r.through.model ? shortName(r.through.model) : undefined);
@@ -1265,6 +1297,9 @@ function mergeInto(a: Link, b: Link): void {
   if (!a.through && b.through) a.through = b.through;
   if (!a.throughName && b.throughName) a.throughName = b.throughName;
   for (const k of b.sources) addUnique(a.sources, k);
+  for (const r of b.refs ?? []) addRef((a.refs ??= []), r);
+  a.guessedTarget = !!a.guessedTarget && !!b.guessedTarget;
+  a.guessedFk = !!a.guessedFk && !!b.guessedFk;
 }
 
 /** FK column candidates in `from` for a reference to `to` when the parser could not tell. */
@@ -1325,6 +1360,7 @@ function dedupe(links: Link[]): Link[] {
     const guessed = guessFkColumns(l.from, l.to, l.toColumns);
     if (guessed.length) {
       l.fromColumns = guessed;
+      l.guessedFk = true;
       add(l);
     } else if (!existing.length) add(l);
   }
@@ -1390,7 +1426,14 @@ function finishLinks(links: Link[]): void {
       for (const [i, c] of l.fromColumns.entries()) {
         if (findColumnLoose(l.from.columns, c)) continue;
         const target = l.toColumns[i] ? findColumn(l.to.columns, l.toColumns[i]) : undefined;
-        l.from.columns.push(column(c, target?.type ?? '', { nullable: l.explicitOptional ?? true }));
+        const implied = column(c, target?.type ?? '', { nullable: l.explicitOptional ?? true });
+        implied.provenance = {
+          derivation: 'implied',
+          confidence: 'medium',
+          refs: (l.refs ?? []).map((r) => ({ ...r })),
+          notes: [`Column added because the association to "${l.to.name}" implies it; it is not declared in the schema.`],
+        };
+        l.from.columns.push(implied);
       }
     }
     const cols = l.fromColumns.map((c) => findColumn(l.from.columns, c)).filter((c): c is Column => !!c);
@@ -1463,6 +1506,7 @@ function inferLinks(entities: WEntity[], links: Link[], linker: Linker): Link[] 
         kind: 'inferred',
         sources: e.sources.slice(0, 1),
         source: c.source ?? e.primary,
+        refs: c.source ?? e.primary ? [{ ...(c.source ?? e.primary)! }] : [],
       });
     }
   }
@@ -1525,6 +1569,7 @@ function linkJoinTables(entities: WEntity[], links: Link[]): Link[] {
       optional: true,
       sources: [...e.sources],
       source: e.primary,
+      refs: e.primary ? [{ ...e.primary }] : [],
     });
   }
   return added;
@@ -1669,6 +1714,75 @@ function toEntity(e: WEntity): Entity {
   if (e.group) out.group = e.group;
   if (e.external) out.external = true;
   if (e.joinTable) out.joinTable = true;
+  out.provenance = entityProvenance(e, files);
+  return out;
+}
+
+function entityProvenance(e: WEntity, files: string[]): Provenance {
+  const refs: SourceRef[] = [];
+  for (const r of e.refs ?? []) addRef(refs, r);
+  const labels = e.sources.map((k) => SOURCE_LABELS[k]).join(', ');
+  const notes: string[] = [];
+  let derivation: Provenance['derivation'] = 'declared';
+  let confidence: Provenance['confidence'] = 'high';
+  if (e.external) {
+    derivation = 'external';
+    confidence = 'low';
+    notes.push('Referenced by a relation but not defined in the scanned workspace (placeholder).');
+  } else if (!e.certain && e.models.length) {
+    derivation = 'guessed';
+    confidence = 'medium';
+    notes.push(
+      `Table name "${e.name}" was derived from model "${e.models[0].name}" using the ${SOURCE_LABELS[e.models[0].kind]} default naming convention (no explicit table name found).`,
+    );
+  } else {
+    notes.push(`Declared in ${labels || 'source'}.`);
+  }
+  const merged = !e.external && (files.length > 1 || e.sources.length > 1);
+  if (merged) notes.push(`Merged from ${files.length} file${files.length === 1 ? '' : 's'} (${labels}).`);
+  const out: Provenance = { derivation, confidence, refs, notes };
+  if (merged) out.merged = true;
+  return out;
+}
+
+function relationProvenance(l: Link): Provenance {
+  const labels = l.sources.map((k) => SOURCE_LABELS[k]).join(', ');
+  const suffix = labels ? ` (${labels})` : '';
+  const notes: string[] = [];
+  let derivation: Provenance['derivation'];
+  let confidence: Provenance['confidence'];
+  if (l.kind === 'foreign-key') {
+    derivation = 'declared';
+    confidence = 'high';
+    notes.push(`Declared foreign key constraint${suffix}.`);
+  } else if (l.kind === 'orm') {
+    derivation = 'orm';
+    confidence = 'medium';
+    notes.push(`Association declared in ORM code${suffix}.`);
+  } else {
+    derivation = 'inferred';
+    confidence = 'low';
+    notes.push('Inferred from naming: the column name matches the key of another table. No constraint or association declares it.');
+  }
+  if (l.guessedFk) {
+    confidence = 'low';
+    notes.push('Foreign key columns were guessed from the target table name.');
+  }
+  if (l.guessedTarget) {
+    if (confidence === 'high') confidence = 'medium';
+    notes.push('Target table name was guessed from the referenced model name.');
+  }
+  if (l.to.external) {
+    confidence = 'low';
+    notes.push(`Target "${l.to.name}" is not defined in the workspace.`);
+  }
+  const refs: SourceRef[] = [];
+  for (const r of l.refs ?? []) addRef(refs, r);
+  addRef(refs, l.source);
+  const merged = refs.length > 1 || l.sources.length > 1;
+  if (merged) notes.push(`Merged from ${refs.length} declaration${refs.length === 1 ? '' : 's'}.`);
+  const out: Provenance = { derivation, confidence, refs, notes };
+  if (merged) out.merged = true;
   return out;
 }
 
@@ -1697,6 +1811,7 @@ function toRelation(l: Link, ids: Set<string>): Relation {
   if (l.through) out.through = l.through.key;
   if (l.throughName) out.throughName = l.throughName;
   if (l.source) out.source = l.source;
+  out.provenance = relationProvenance(l);
   return out;
 }
 

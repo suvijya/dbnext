@@ -1,0 +1,108 @@
+entities: 63
+  baker [table]: id, name, contact, bakery_id, bakery, cakes
+  bakery [table]: id, name, profit_margin, bakers, cakes
+  base [table]: id, name
+  bills [table]: id, user_id, self_id
+  cake [table]: id, name, fruits, fillings, price, bakery_id, gluten_free, bakery, bakers, md5_hash, fruit
+  cake_baker [table]: cake_id, baker_id, baker, cake
+  cake_filling [table]: cake_id, filling_id, cake, filling
+  cake_filling_price [table]: cake_id, filling_id, price, ignored_attr
+  collection [table]: id, integers, integers_opt
+  comment [table]: id, comment, user_id, post_id, user, post
+  container [table]: db_id
+  content [table]: id, container_id
+  example [table]: id, category
+  files [table]: created_at, updated_at, id, notes_id, file_path, notes
+  filling [table]: id, name, cakes, vendor_id, ignored_attr, ingredients
+  fruit [table]: id, name, cake_id, cake
+  hello [table]: id, one, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve, twelve_two
+  indexes [table]: indexes_id, unique_attr, unique_key_a, unique_key_b, index1_attr, index2_attr
+  ingredient [table]: id, name, filling_id, ingredient_id, filling, ingredient
+  job [table]: id, retry_limit, note
+  legacy [table]: id, first_name, last_name, email, is_admin, order_date, order_id, ser_only, de_only, field_name, user_name, response_code
+  lunch_set [table]: id, name, tea
+  m [table]: x, y, z
+  materials [table]: id, created_at, updated_at, name, description, tag_ids
+  model [table]: id, name, id_1, id_2, owner, description, id_3, id_4, id_5, id_6
+  my_entity [table]: id, type, my_a, b, new_a
+  note [table]: id, title, text
+  notes [table]: created_at, updated_at, id, title, content, files
+  pool [table]: id, name
+  post [table]: id, title, text, user_id, author, comments, tags, created_by, extra, response_code
+  post_tag [table]: post_id, tag_id, post, tag
+  posts [table]: id, title, text, id_primary, id_secondary
+  primary_key_of_1 [table]: id, owner, name, description
+  primary_key_of_11 [table]: id_1, id_2, id_3, id_4, id_5, id_6, id_7, id_8, id_9, id_10, id_11, owner, name, description
+  primary_key_of_12 [table]: id_1, id_2, id_3, id_4, id_5, id_6, id_7, id_8, id_9, id_10, id_11, id_12, owner, name, description
+  primary_key_of_2 [table]: id_1, id_2, owner, name, description
+  primary_key_of_3 [table]: id_1, id_2, id_3, owner, name, description
+  primary_key_of_4 [table]: id_1, id_2, id_3, id_4, owner, name, description
+  profile [table]: id, picture, user_id, user
+  related [table]: id, name, test_id
+  rust_keyword [table]: id, testing, rust, keywords, raw_identifier, as, async, await, break, const, continue, crate, dyn, else, enum, extern, false, fn, for, if, impl, in, let, loop, match, mod, move, mut, pub, ref, return, self, static, struct, trait, true, type, union, unsafe, use, where, while, abstract, become, box, do, final, macro, override, priv, try, typeof, unsized, virtual, yield
+  sea_orm_permission [table]: id, action
+  sea_orm_resource [table]: id, schema, table
+  sea_orm_role [table]: id, role
+  sea_orm_role_hierarchy [table]: super_role_id, role_id
+  sea_orm_role_permission [table]: role_id, permission_id, resource_id
+  sea_orm_user_override [table]: user_id, permission_id, resource_id, grant
+  sea_orm_user_role [table]: user_id, role_id
+  seaql_migrations [table]: version, applied_at
+  sys.app_user [table]: id, email, tenant_id, name
+  t [table]: col_1, col_2, col_3, col_4, col_5, col_6, col_7, col_8, col_9, col_10, col_11, col_12
+  table_1 [table]: id
+  table_2 [table]: id, table_1_id
+  table_3 [table]: id, table_1_id, table_2_id
+  tag [table]: id, tag, posts
+  triangle [table]: id, p1, p2, p3
+  underscores [table]: id, a_b_c_d, a_b_c_dd, a_b_cc_d, a_bb_c_d, aa_b_c_d
+  user [table]: id, name, email, profile, posts
+  users [table]: created_at, updated_at, id, pid, email, password, api_key, name, reset_token, reset_sent_at, email_verification_token, email_verification_sent_at, email_verified_at, self_id, self_idd
+  users_saved_bills [table]: user_id, bill_id
+  users_votes [table]: user_id, bill_id, vote, user_idd, bill_idd
+  vendor [table]: id, name
+  world.hello [table]: id
+relations: 41
+  baker(bakery_id) -> bakery(id) orm many-to-one
+  bills(id) -> users(id) orm many-to-many
+  bills(user_id) -> users(id) orm many-to-one
+  cake(bakery_id) -> bakery(id) orm many-to-one
+  cake_baker(baker_id) -> baker(id) orm many-to-one
+  cake_baker(cake_id) -> cake(id) orm many-to-one
+  cake_filling(cake_id) -> cake(id) foreign-key many-to-one
+  cake_filling(filling_id) -> filling(id) foreign-key many-to-one
+  cake_filling_price(cake_id) -> cake(id) orm many-to-one
+  cake_filling_price(filling_id) -> cake_filling(filling_id) orm many-to-one
+  comment(user_id) -> users(id) inferred many-to-one
+  content(container_id) -> container(db_id) inferred many-to-one
+  files(notes_id) -> notes(id) orm many-to-one
+  filling(vendor_id) -> vendor(id) orm many-to-one
+  fruit(cake_id) -> cake(id) foreign-key many-to-one
+  ingredient(filling_id) -> filling(id) orm many-to-one
+  ingredient(ingredient_id) -> ingredient(id) inferred many-to-one
+  post(user_id) -> users(id) inferred many-to-one
+  post_tag(tag_id) -> tag(id) inferred many-to-one
+  profile(user_id) -> users(id) inferred one-to-one
+  sea_orm_role(id) -> sea_orm_role(id) orm many-to-many
+  sea_orm_role(id) -> users(id) inferred many-to-many
+  sea_orm_role_hierarchy(role_id) -> sea_orm_role(id) orm many-to-one
+  sea_orm_role_hierarchy(super_role_id) -> sea_orm_role(id) orm many-to-one
+  sea_orm_role_permission(permission_id) -> sea_orm_permission(id) orm many-to-one
+  sea_orm_role_permission(resource_id) -> sea_orm_resource(id) orm many-to-one
+  sea_orm_role_permission(role_id) -> sea_orm_role(id) orm many-to-one
+  sea_orm_user_override(permission_id) -> sea_orm_permission(id) orm many-to-one
+  sea_orm_user_override(resource_id) -> sea_orm_resource(id) orm many-to-one
+  sea_orm_user_override(user_id) -> users(id) inferred many-to-one
+  sea_orm_user_role(role_id) -> sea_orm_role(id) orm many-to-one
+  sea_orm_user_role(user_id) -> users(id) inferred one-to-one
+  table_2(table_1_id) -> table_1(id) foreign-key many-to-one
+  table_3(table_1_id) -> table_1(id) foreign-key many-to-one
+  table_3(table_2_id,table_1_id) -> table_2(id,table_1_id) foreign-key many-to-one
+  users_saved_bills(bill_id) -> bills(id) orm many-to-one
+  users_saved_bills(user_id) -> users(id) orm many-to-one
+  users_votes(bill_id) -> bills(id) orm many-to-one
+  users_votes(bill_idd) -> bills(id) orm many-to-one
+  users_votes(user_id) -> users(id) orm many-to-one
+  users_votes(user_idd) -> users(id) orm many-to-one
+engines: mariadb, mysql, postgresql, redis
+warnings: 3

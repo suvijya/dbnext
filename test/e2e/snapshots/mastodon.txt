@@ -1,0 +1,367 @@
+entities: 140
+  access_tokens [table]: id
+  account_aliases [table]: id, account_id, acct, created_at, updated_at, uri
+  account_conversations [table]: id, account_id, conversation_id, last_status_id, lock_version, participant_account_ids, status_ids, unread
+  account_deletion_requests [table]: id, account_id, created_at, updated_at
+  account_domain_blocks [table]: id, account_id, created_at, domain, updated_at
+  account_identity_proofs [table]: 
+  account_migrations [table]: id, account_id, acct, created_at, followers_count, target_account_id, updated_at
+  account_moderation_notes [table]: id, account_id, content, created_at, target_account_id, updated_at
+  account_notes [table]: id, account_id, comment, created_at, target_account_id, updated_at
+  account_pins [table]: id, account_id, created_at, target_account_id, updated_at
+  account_reach_filters [table]: id, account_id, bloom_filter, created_at, salt, saturated, updated_at
+  account_relationship_severance_events [table]: id, account_id, created_at, followers_count, following_count, relationship_severance_event_id, updated_at
+  account_stats [table]: id, account_id, created_at, followers_count, following_count, last_status_at, statuses_count, updated_at
+  account_statuses_cleanup_policies [table]: id, account_id, created_at, enabled, keep_direct, keep_media, keep_pinned, keep_polls, keep_self_bookmark, keep_self_fav, min_favs, min_reblogs, min_status_age, updated_at
+  account_summaries [table]: account_id, language, sensitive
+  account_warning_presets [table]: id, created_at, text, title, updated_at, action_category
+  account_warnings [table]: id, account_id, action, created_at, overruled_at, report_id, status_ids, target_account_id, text, updated_at
+  accounts [table]: id, actor_type, also_known_as, attribution_domains, avatar_content_type, avatar_description, avatar_file_name, avatar_file_size, avatar_remote_url, avatar_storage_schema_version, avatar_updated_at, collections_url, created_at, discoverable, display_name, domain, feature_approval_policy, featured_collection_url, fields, followers_url, following_url, header_content_type, header_description, header_file_name, header_file_size, header_remote_url, header_storage_schema_version, header_updated_at, hide_collections, id_scheme, inbox_url, indexable, last_webfingered_at, locked, memorial, moved_to_account_id, note, outbox_url, protocol, public_key, requested_deletion_at, requested_review_at, reviewed_at, sensitized_at, shared_inbox_url, show_featured, show_media, show_media_replies, silenced_at, suspended_at, suspension_origin, trendable, updated_at, uri, url, username
+  accounts_tags [table]: id, account_id, tag_id
+  action_logs [table]: account_id, moderation_subscription_id
+  admin_action_logs [table]: id, account_id, action, created_at, human_identifier, moderation_subscription_id, permalink, recorded_changes, recorded_changes_format, route_param, target_id, target_type, updated_at
+  admin_server_checks [table]: id, key, status, severity, ignored, data, checked_at, created_at, updated_at
+  announcement_mutes [table]: id, account_id, announcement_id, created_at, updated_at
+  announcement_reactions [table]: id, account_id, announcement_id, created_at, custom_emoji_id, name, updated_at
+  announcements [table]: id, all_day, created_at, ends_at, notification_sent_at, published, published_at, scheduled_at, starts_at, status_ids, text, updated_at
+  annual_report_statuses_per_account_counts [table]: id, account_id, statuses_count, year
+  appeals [table]: id, account_id, account_warning_id, approved_at, approved_by_account_id, created_at, rejected_at, rejected_by_account_id, text, updated_at
+  applications [table]: id
+  backfill_requests [table]: fasp_provider_id, provider_id
+  backups [table]: id, created_at, dump_content_type, dump_file_name, dump_file_size, dump_updated_at, processed, updated_at, user_id
+  blocks [table]: id, account_id, created_at, target_account_id, updated_at, uri
+  bookmarks [table]: id, account_id, created_at, status_id, updated_at
+  bulk_import_rows [table]: id, bulk_import_id, created_at, data, updated_at
+  bulk_imports [table]: id, account_id, created_at, finished_at, imported_items, likely_mismatched, missing_status, original_filename, overwrite, processed_items, state, total_items, type, updated_at
+  canonical_email_blocks [table]: id, canonical_email_hash, created_at, reference_account_id, updated_at
+  capabilities [table]: fasp_provider_id, provider_id
+  collection_items [table]: id, account_id, activity_uri, approval_last_verified_at, approval_uri, collection_id, created_at, object_uri, position, state, updated_at, uri
+  collection_reports [table]: id, collection_id, created_at, report_id, updated_at
+  collections [table]: id, account_id, created_at, description, description_html, discoverable, item_count, language, local, name, original_number_of_items, sensitive, tag_id, updated_at, uri, url
+  conversation_mutes [table]: id, account_id, conversation_id
+  conversations [table]: id, created_at, parent_account_id, parent_status_id, updated_at, uri
+  custom_emoji_categories [table]: id, created_at, featured_emoji_id, name, updated_at
+  custom_emojis [table]: id, category_id, created_at, disabled, domain, image_content_type, image_file_name, image_file_size, image_remote_url, image_storage_schema_version, image_updated_at, shortcode, updated_at, uri, visible_in_picker
+  custom_filter_keywords [table]: id, created_at, custom_filter_id, keyword, updated_at, whole_word
+  custom_filter_statuses [table]: id, created_at, custom_filter_id, status_id, updated_at
+  custom_filters [table]: id, account_id, action, context, created_at, expires_at, phrase, updated_at
+  debug_callbacks [table]: fasp_provider_id, provider_id
+  deprecated_preview_cards [table]: id, status_id, url, title, description, created_at, updated_at, type, html, author_name, author_url, provider_name, provider_url, width, height
+  domain_allows [table]: id, created_at, domain, moderation_subscription_id, updated_at
+  domain_blocks [table]: id, created_at, domain, moderation_subscription_id, obfuscate, private_comment, public_comment, reject_media, reject_reports, severity, updated_at
+  email_domain_blocks [table]: id, allow_with_approval, created_at, domain, parent_id, updated_at
+  email_subscriptions [table]: id, account_id, confirmation_token, confirmed_at, created_at, email, locale, updated_at
+  fasp_backfill_requests [table]: id, category, created_at, cursor, fasp_provider_id, fulfilled, max_count, updated_at
+  fasp_capabilities [table]: id, created_at, enabled, fasp_provider_id, name, updated_at, version
+  fasp_debug_callbacks [table]: id, created_at, fasp_provider_id, ip, request_body, updated_at
+  fasp_follow_recommendations [table]: id, created_at, recommended_account_id, requesting_account_id, updated_at
+  fasp_providers [table]: id, base_url, confirmed, contact_email, created_at, delivery_last_failed_at, fediverse_account, name, privacy_policy, provider_public_key_pem, remote_identifier, server_private_key_pem, sign_in_url, updated_at
+  fasp_subscriptions [table]: id, category, created_at, fasp_provider_id, max_batch_size, subscription_type, threshold_likes, threshold_replies, threshold_shares, threshold_timeframe, updated_at
+  favourites [table]: id, account_id, created_at, status_id, updated_at
+  featured_tags [table]: id, account_id, created_at, last_status_at, name, statuses_count, tag_id, updated_at
+  follow_recommendation_mutes [table]: id, account_id, created_at, target_account_id, updated_at
+  follow_recommendation_suppressions [table]: id, account_id, created_at, updated_at
+  follow_recommendations [table]: requesting_account_id, recommended_account_id, account_id
+  follow_requests [table]: id, account_id, created_at, languages, notify, show_reblogs, target_account_id, updated_at, uri
+  follows [table]: id, account_id, created_at, languages, notify, show_reblogs, target_account_id, updated_at, uri
+  generated_annual_reports [table]: id, account_id, created_at, data, schema_version, share_key, updated_at, viewed_at, year
+  global_follow_recommendations [table]: account_id, rank, reason, stale
+  identities [table]: id, created_at, provider, uid, updated_at, user_id
+  information_schema.role_table_grants [table]: 
+  instance_moderation_notes [table]: id, account_id, content, created_at, domain, updated_at
+  instances [table]: domain_block_id, domain_allow_id, unavailable_domain_id
+  invites [table]: id, autofollow, code, comment, created_at, expires_at, max_uses, updated_at, user_id, uses
+  ip_blocks [table]: id, comment, created_at, expires_at, ip, severity, updated_at
+  keypairs [table]: id, account_id, created_at, expires_at, local_fragment, private_key, public_key, revoked, type, updated_at, uri
+  list_accounts [table]: id, account_id, follow_id, follow_request_id, list_id
+  lists [table]: id, account_id, created_at, exclusive, replies_policy, title, updated_at
+  login_activities [table]: id, authentication_method, created_at, failure_reason, ip, provider, success, user_agent, user_id
+  markers [table]: id, created_at, last_read_id, lock_version, timeline, updated_at, user_id
+  media_attachments [table]: id, account_id, blurhash, created_at, description, file_content_type, file_file_name, file_file_size, file_meta, file_storage_schema_version, file_updated_at, processing, remote_url, scheduled_status_id, shortcode, status_id, thumbnail_content_type, thumbnail_file_name, thumbnail_file_size, thumbnail_remote_url, thumbnail_storage_schema_version, thumbnail_updated_at, type, updated_at
+  mentions [table]: id, account_id, created_at, silent, status_id, updated_at
+  moderation_subscription_advisories [table]: id, action, created_at, moderation_subscription_id, target_key, target_type, updated_at
+  moderation_subscriptions [table]: id, apply_automatically, created_at, last_synced_at, list_action, name, override_unattributed, preserve_relationships, priority, retract_automatically, type, updated_at, url
+  moderation_suggestions [table]: id, moderation_subscription_id, state, action, target_type, target_key, created_at, updated_at
+  mutes [table]: id, account_id, created_at, expires_at, hide_notifications, target_account_id, updated_at
+  notification_permissions [table]: id, account_id, created_at, from_account_id, updated_at
+  notification_policies [table]: id, account_id, created_at, for_bots, for_limited_accounts, for_new_accounts, for_not_followers, for_not_following, for_private_mentions, updated_at
+  notification_requests [table]: id, account_id, created_at, from_account_id, last_status_id, notifications_count, updated_at
+  notifications [table]: id, account_id, activity_id, activity_type, created_at, filtered, from_account_id, group_key, type, updated_at
+  oauth_access_grants [table]: id, application_id, code_challenge, code_challenge_method, created_at, expires_in, redirect_uri, resource_owner_id, revoked_at, scopes, token
+  oauth_access_tokens [table]: id, application_id, created_at, expires_in, last_used_at, last_used_ip, refresh_token, resource_owner_id, revoked_at, scopes, token
+  oauth_applications [table]: id, confidential, created_at, name, owner_id, owner_type, redirect_uri, scopes, secret, superapp, uid, updated_at, website
+  pghero_space_stats [table]: id, captured_at, database, relation, schema, size
+  poll_votes [table]: id, account_id, choice, created_at, poll_id, updated_at, uri
+  polls [table]: id, account_id, cached_tallies, created_at, expires_at, hide_totals, last_fetched_at, lock_version, multiple, options, status_id, updated_at, voters_count, votes_count
+  preview_card_providers [table]: id, created_at, domain, icon_content_type, icon_file_name, icon_file_size, icon_updated_at, requested_review_at, reviewed_at, trendable, updated_at
+  preview_card_trends [table]: id, allowed, language, preview_card_id, rank, score
+  preview_cards [table]: id, author_account_id, author_name, author_url, blurhash, created_at, description, embed_url, height, html, image_content_type, image_description, image_file_name, image_file_size, image_storage_schema_version, image_updated_at, language, link_type, max_score, max_score_at, provider_name, provider_url, published_at, title, trendable, type, unverified_author_account_id, updated_at, url, width
+  preview_cards_statuses [table]: id, preview_card_id, status_id, url
+  providers [table]: 
+  push_subscriptions [table]: user_id, access_token_id
+  quotes [table]: id, account_id, activity_uri, approval_uri, created_at, legacy, quoted_account_id, quoted_status_id, state, status_id, updated_at
+  relationship_severance_events [table]: id, created_at, purged, target_name, type, updated_at
+  relays [table]: id, created_at, follow_activity_id, inbox_url, state, updated_at
+  report_notes [table]: id, account_id, content, created_at, report_id, updated_at
+  reports [table]: id, account_id, action_taken_at, action_taken_by_account_id, application_id, assigned_account_id, category, comment, created_at, forwarded, rule_ids, status_ids, target_account_id, updated_at, uri
+  rule_translations [table]: id, created_at, hint, language, rule_id, text, updated_at
+  rules [table]: id, created_at, deleted_at, hint, priority, text, updated_at
+  scheduled_statuses [table]: id, account_id, params, scheduled_at
+  server_checks [table]: 
+  session_activations [table]: id, access_token_id, created_at, ip, session_id, updated_at, user_agent, user_id, web_push_subscription_id
+  settings [table]: id, created_at, updated_at, value, var
+  severed_relationships [table]: id, created_at, direction, languages, local_account_id, notify, relationship_severance_event_id, remote_account_id, show_reblogs, updated_at
+  site_uploads [table]: id, blurhash, created_at, file_content_type, file_file_name, file_file_size, file_updated_at, meta, updated_at, var
+  software_deprecations [table]: id, branch, created_at, end_of_support, updated_at, warning_issued
+  software_updates [table]: id, created_at, end_of_support, release_notes, type, updated_at, urgent, version
+  status_edits [table]: id, account_id, created_at, media_descriptions, ordered_media_attachment_ids, poll_options, quote_id, sensitive, spoiler_text, status_id, text, updated_at
+  status_pins [table]: id, account_id, created_at, status_id, updated_at
+  status_stats [table]: id, created_at, favourites_count, quotes_count, reblogs_count, replies_count, status_id, untrusted_favourites_count, untrusted_reblogs_count, updated_at
+  status_trends [table]: id, account_id, allowed, language, rank, score, status_id
+  statuses [table]: id, account_id, application_id, conversation_id, created_at, deleted_at, edited_at, fetched_replies_at, in_reply_to_account_id, in_reply_to_id, language, local, ordered_media_attachment_ids, poll_id, quote_approval_policy, reblog_of_id, reply, sensitive, spoiler_text, text, trendable, updated_at, uri, url, visibility
+  statuses_tags [table]: id, status_id, tag_id
+  subscriptions [table]: provider_id, fasp_provider_id
+  tag_follows [table]: id, account_id, created_at, tag_id, updated_at
+  tag_trends [table]: id, allowed, language, rank, score, tag_id
+  tagged_objects [table]: id, ap_type, created_at, object_id, object_type, status_id, updated_at, uri
+  tags [table]: id, created_at, display_name, last_status_at, listable, max_score, max_score_at, name, requested_review_at, reviewed_at, trendable, updated_at, usable
+  terms_of_services [table]: id, changelog, created_at, effective_date, notification_sent_at, published_at, text, updated_at
+  tmp_account_summaries [table]: account_id, language, sensitive
+  tmp_global_follow_recommendations [table]: account_id, rank, reason, stale
+  tombstones [table]: id, account_id, by_moderator, created_at, updated_at, uri
+  unavailable_domains [table]: id, created_at, domain, updated_at
+  user_invite_requests [table]: id, created_at, text, updated_at, user_id
+  user_ips [table]: user_id
+  user_roles [table]: id, collection_limit, color, created_at, highlighted, name, permissions, position, require_2fa, updated_at
+  username_blocks [table]: id, allow_with_approval, created_at, exact, normalized_username, updated_at, username
+  users [table]: id, account_id, age_verified_at, approved, chosen_languages, confirmation_sent_at, confirmation_token, confirmed_at, consumed_timestep, created_at, created_by_application_id, current_sign_in_at, disabled, email, encrypted_password, invite_id, last_emailed_at, last_sign_in_at, locale, otp_backup_codes, otp_required_for_login, otp_secret, require_tos_interstitial, reset_password_sent_at, reset_password_token, role_id, settings, sign_in_count, sign_in_token, sign_in_token_sent_at, sign_up_ip, skip_sign_in_token, time_zone, unconfirmed_email, updated_at, webauthn_id
+  web_push_subscriptions [table]: id, access_token_id, created_at, data, endpoint, key_auth, key_p256dh, standard, updated_at, user_id
+  web_settings [table]: id, created_at, data, updated_at, user_id
+  webauthn_credentials [table]: id, created_at, external_id, nickname, public_key, sign_count, updated_at, user_id
+  webhooks [table]: id, created_at, enabled, events, secret, template, updated_at, url
+relations: 223
+  account_aliases(account_id) -> accounts(id) foreign-key many-to-one
+  account_conversations(account_id) -> accounts(id) foreign-key many-to-one
+  account_conversations(conversation_id) -> conversations(id) foreign-key many-to-one
+  account_conversations(last_status_id) -> statuses(id) orm many-to-one
+  account_deletion_requests(account_id) -> accounts(id) foreign-key many-to-one
+  account_domain_blocks(account_id) -> accounts(id) foreign-key many-to-one
+  account_migrations(account_id) -> accounts(id) foreign-key many-to-one
+  account_migrations(target_account_id) -> accounts(id) foreign-key many-to-one
+  account_moderation_notes(account_id) -> accounts(id) foreign-key many-to-one
+  account_moderation_notes(target_account_id) -> accounts(id) foreign-key many-to-one
+  account_notes(account_id) -> accounts(id) foreign-key many-to-one
+  account_notes(target_account_id) -> accounts(id) foreign-key many-to-one
+  account_pins(account_id) -> accounts(id) foreign-key many-to-one
+  account_pins(target_account_id) -> accounts(id) foreign-key many-to-one
+  account_reach_filters(account_id) -> accounts(id) foreign-key one-to-one
+  account_relationship_severance_events(account_id) -> accounts(id) foreign-key many-to-one
+  account_relationship_severance_events(relationship_severance_event_id) -> relationship_severance_events(id) foreign-key many-to-one
+  account_stats(account_id) -> accounts(id) foreign-key one-to-one
+  account_statuses_cleanup_policies(account_id) -> accounts(id) foreign-key many-to-one
+  account_summaries(account_id) -> accounts(id) foreign-key one-to-one
+  account_warnings(account_id) -> accounts(id) foreign-key many-to-one
+  account_warnings(report_id) -> reports(id) foreign-key many-to-one
+  account_warnings(target_account_id) -> accounts(id) foreign-key many-to-one
+  accounts(domain) -> domain_blocks(id) orm many-to-one
+  accounts(id) -> accounts(id) foreign-key many-to-many
+  accounts(id) -> accounts(id) foreign-key many-to-many
+  accounts(id) -> conversations(id) foreign-key many-to-many
+  accounts(id) -> moderation_subscriptions(id) orm many-to-many
+  accounts(id) -> statuses(id) foreign-key many-to-many
+  accounts(id) -> statuses(id) foreign-key many-to-many
+  accounts(id) -> statuses(id) foreign-key many-to-many
+  accounts(moved_to_account_id) -> accounts(id) foreign-key many-to-one
+  accounts_tags(account_id) -> accounts(id) inferred many-to-one
+  accounts_tags(tag_id) -> tags(id) inferred many-to-one
+  action_logs(account_id) -> accounts(id) orm many-to-one
+  action_logs(moderation_subscription_id) -> moderation_subscriptions(id) orm many-to-one
+  admin_action_logs(account_id) -> accounts(id) foreign-key many-to-one
+  admin_action_logs(moderation_subscription_id) -> moderation_subscriptions(id) inferred many-to-one
+  announcement_mutes(account_id) -> accounts(id) foreign-key many-to-one
+  announcement_mutes(announcement_id) -> announcements(id) foreign-key many-to-one
+  announcement_reactions(account_id) -> accounts(id) foreign-key many-to-one
+  announcement_reactions(announcement_id) -> announcements(id) foreign-key many-to-one
+  announcement_reactions(custom_emoji_id) -> custom_emojis(id) foreign-key many-to-one
+  announcements(id) -> accounts(id) foreign-key many-to-many
+  annual_report_statuses_per_account_counts(account_id) -> accounts(id) inferred many-to-one
+  appeals(account_id) -> accounts(id) foreign-key many-to-one
+  appeals(account_warning_id) -> account_warnings(id) foreign-key one-to-one
+  appeals(approved_by_account_id) -> accounts(id) foreign-key many-to-one
+  appeals(rejected_by_account_id) -> accounts(id) foreign-key many-to-one
+  applications(user_id) -> users(id) orm many-to-one
+  backfill_requests(fasp_provider_id) -> providers() orm many-to-one
+  backfill_requests(provider_id) -> providers() orm many-to-one
+  backups(user_id) -> users(id) foreign-key many-to-one
+  blocks(account_id) -> accounts(id) foreign-key many-to-one
+  blocks(target_account_id) -> accounts(id) foreign-key many-to-one
+  bookmarks(account_id) -> accounts(id) foreign-key many-to-one
+  bookmarks(status_id) -> statuses(id) foreign-key many-to-one
+  bulk_import_rows(bulk_import_id) -> bulk_imports(id) foreign-key many-to-one
+  bulk_imports(account_id) -> accounts(id) foreign-key many-to-one
+  canonical_email_blocks(reference_account_id) -> accounts(id) foreign-key many-to-one
+  capabilities(fasp_provider_id) -> providers() orm many-to-one
+  capabilities(provider_id) -> providers() orm many-to-one
+  collection_items(account_id) -> accounts(id) foreign-key many-to-one
+  collection_items(collection_id) -> collections(id) foreign-key many-to-one
+  collection_reports(collection_id) -> collections(id) foreign-key many-to-one
+  collection_reports(report_id) -> reports(id) foreign-key many-to-one
+  collections(account_id) -> accounts(id) foreign-key many-to-one
+  collections(id) -> reports(id) foreign-key many-to-many
+  collections(tag_id) -> tags(id) foreign-key many-to-one
+  conversation_mutes(account_id) -> accounts(id) foreign-key many-to-one
+  conversation_mutes(conversation_id) -> conversations(id) foreign-key many-to-one
+  conversations(parent_account_id) -> accounts(id) orm many-to-one
+  conversations(parent_status_id) -> statuses(id) orm one-to-one
+  custom_emoji_categories(featured_emoji_id) -> custom_emojis(id) foreign-key many-to-one
+  custom_emojis(category_id) -> custom_emoji_categories(id) orm many-to-one
+  custom_emojis(shortcode) -> custom_emojis(id) orm one-to-one
+  custom_filter_keywords(custom_filter_id) -> custom_filters(id) foreign-key many-to-one
+  custom_filter_statuses(custom_filter_id) -> custom_filters(id) foreign-key many-to-one
+  custom_filter_statuses(status_id) -> statuses(id) foreign-key many-to-one
+  custom_filters(account_id) -> accounts(id) foreign-key many-to-one
+  custom_filters(id) -> statuses(id) foreign-key many-to-many
+  debug_callbacks(fasp_provider_id) -> providers() orm many-to-one
+  debug_callbacks(provider_id) -> providers() orm many-to-one
+  deprecated_preview_cards(status_id) -> statuses(id) foreign-key one-to-one
+  domain_allows(moderation_subscription_id) -> moderation_subscriptions(id) foreign-key many-to-one
+  domain_blocks(moderation_subscription_id) -> moderation_subscriptions(id) foreign-key many-to-one
+  email_domain_blocks(parent_id) -> email_domain_blocks(id) foreign-key many-to-one
+  email_subscriptions(account_id) -> accounts(id) foreign-key many-to-one
+  fasp_backfill_requests(fasp_provider_id) -> fasp_providers(id) foreign-key many-to-one
+  fasp_capabilities(fasp_provider_id) -> fasp_providers(id) foreign-key many-to-one
+  fasp_debug_callbacks(fasp_provider_id) -> fasp_providers(id) foreign-key many-to-one
+  fasp_follow_recommendations(recommended_account_id) -> accounts(id) foreign-key many-to-one
+  fasp_follow_recommendations(requesting_account_id) -> accounts(id) foreign-key many-to-one
+  fasp_subscriptions(fasp_provider_id) -> fasp_providers(id) foreign-key many-to-one
+  favourites(account_id) -> accounts(id) foreign-key many-to-one
+  favourites(status_id) -> statuses(id) foreign-key many-to-one
+  featured_tags(account_id) -> accounts(id) foreign-key many-to-one
+  featured_tags(tag_id) -> tags(id) foreign-key many-to-one
+  follow_recommendation_mutes(account_id) -> accounts(id) foreign-key many-to-one
+  follow_recommendation_mutes(target_account_id) -> accounts(id) foreign-key many-to-one
+  follow_recommendation_suppressions(account_id) -> account_summaries(account_id) orm one-to-one
+  follow_recommendation_suppressions(account_id) -> accounts(id) foreign-key one-to-one
+  follow_recommendations(account_id) -> account_summaries(account_id) orm many-to-one
+  follow_recommendations(account_id) -> accounts(id) orm many-to-one
+  follow_recommendations(recommended_account_id) -> accounts(id) orm many-to-one
+  follow_recommendations(requesting_account_id) -> accounts(id) orm many-to-one
+  follow_requests(account_id) -> accounts(id) foreign-key many-to-one
+  follow_requests(target_account_id) -> accounts(id) foreign-key many-to-one
+  follows(account_id) -> accounts(id) foreign-key many-to-one
+  follows(target_account_id) -> accounts(id) foreign-key many-to-one
+  generated_annual_reports(account_id) -> accounts(id) foreign-key many-to-one
+  global_follow_recommendations(account_id) -> accounts(id) foreign-key one-to-one
+  identities(user_id) -> users(id) foreign-key many-to-one
+  instance_moderation_notes(account_id) -> accounts(id) foreign-key many-to-one
+  instance_moderation_notes(domain) -> instances() orm many-to-one
+  instances(domain_allow_id) -> domain_allows(id) orm many-to-one
+  instances(domain_block_id) -> domain_blocks(id) orm many-to-one
+  instances(unavailable_domain_id) -> unavailable_domains(id) orm many-to-one
+  invites(user_id) -> users(id) foreign-key many-to-one
+  keypairs(account_id) -> accounts(id) foreign-key many-to-one
+  list_accounts(account_id) -> accounts(id) foreign-key many-to-one
+  list_accounts(follow_id) -> follows(id) foreign-key many-to-one
+  list_accounts(follow_request_id) -> follow_requests(id) foreign-key many-to-one
+  list_accounts(list_id) -> lists(id) foreign-key many-to-one
+  lists(account_id) -> accounts(id) foreign-key many-to-one
+  login_activities(user_id) -> users(id) foreign-key many-to-one
+  markers(user_id) -> users(id) foreign-key many-to-one
+  media_attachments(account_id) -> accounts(id) foreign-key many-to-one
+  media_attachments(scheduled_status_id) -> scheduled_statuses(id) foreign-key many-to-one
+  media_attachments(status_id) -> statuses(id) foreign-key many-to-one
+  mentions(account_id) -> accounts(id) foreign-key many-to-one
+  mentions(status_id) -> statuses(id) foreign-key many-to-one
+  moderation_subscription_advisories(moderation_subscription_id) -> moderation_subscriptions(id) foreign-key many-to-one
+  moderation_suggestions(moderation_subscription_id) -> moderation_subscriptions(id) foreign-key many-to-one
+  mutes(account_id) -> accounts(id) foreign-key many-to-one
+  mutes(target_account_id) -> accounts(id) foreign-key many-to-one
+  notification_permissions(account_id) -> accounts(id) foreign-key many-to-one
+  notification_permissions(from_account_id) -> accounts(id) foreign-key many-to-one
+  notification_policies(account_id) -> accounts(id) foreign-key one-to-one
+  notification_requests(account_id) -> accounts(id) foreign-key many-to-one
+  notification_requests(account_id) -> notification_policies(id) orm many-to-one
+  notification_requests(from_account_id) -> accounts(id) foreign-key many-to-one
+  notification_requests(last_status_id) -> statuses(id) foreign-key many-to-one
+  notifications(account_id) -> accounts(id) foreign-key many-to-one
+  notifications(from_account_id) -> accounts(id) foreign-key many-to-one
+  oauth_access_grants(application_id) -> oauth_applications(id) foreign-key many-to-one
+  oauth_access_grants(resource_owner_id) -> users(id) foreign-key many-to-one
+  oauth_access_tokens(application_id) -> oauth_applications(id) foreign-key many-to-one
+  oauth_access_tokens(resource_owner_id) -> users(id) foreign-key many-to-one
+  oauth_applications(owner_id) -> users(id) foreign-key many-to-one
+  poll_votes(account_id) -> accounts(id) foreign-key many-to-one
+  poll_votes(poll_id) -> polls(id) foreign-key many-to-one
+  polls(account_id) -> accounts(id) foreign-key many-to-one
+  polls(status_id) -> statuses(id) foreign-key one-to-one
+  preview_card_trends(preview_card_id) -> preview_cards(id) foreign-key one-to-one
+  preview_cards(author_account_id) -> accounts(id) foreign-key many-to-one
+  preview_cards(unverified_author_account_id) -> accounts(id) foreign-key many-to-one
+  preview_cards_statuses(preview_card_id) -> preview_cards(id) orm many-to-one
+  preview_cards_statuses(status_id) -> statuses(id) orm one-to-one
+  providers() -> providers() orm many-to-many
+  providers() -> providers() orm many-to-many
+  providers() -> providers() orm many-to-many
+  providers() -> providers() orm many-to-many
+  push_subscriptions(access_token_id) -> access_tokens(id) orm many-to-one
+  push_subscriptions(user_id) -> users(id) orm many-to-one
+  quotes(account_id) -> accounts(id) foreign-key many-to-one
+  quotes(quoted_account_id) -> accounts(id) foreign-key many-to-one
+  quotes(quoted_status_id) -> statuses(id) foreign-key many-to-one
+  quotes(status_id) -> statuses(id) foreign-key one-to-one
+  report_notes(account_id) -> accounts(id) foreign-key many-to-one
+  report_notes(report_id) -> reports(id) foreign-key many-to-one
+  reports(account_id) -> accounts(id) foreign-key many-to-one
+  reports(action_taken_by_account_id) -> accounts(id) foreign-key many-to-one
+  reports(application_id) -> oauth_applications(id) foreign-key many-to-one
+  reports(assigned_account_id) -> accounts(id) foreign-key many-to-one
+  reports(target_account_id) -> accounts(id) foreign-key many-to-one
+  rule_translations(rule_id) -> rules(id) foreign-key many-to-one
+  scheduled_statuses(account_id) -> accounts(id) foreign-key many-to-one
+  session_activations(access_token_id) -> oauth_access_tokens(id) foreign-key many-to-one
+  session_activations(user_id) -> users(id) foreign-key many-to-one
+  session_activations(web_push_subscription_id) -> push_subscriptions() orm one-to-one
+  severed_relationships(local_account_id) -> accounts(id) foreign-key many-to-one
+  severed_relationships(relationship_severance_event_id) -> relationship_severance_events(id) foreign-key many-to-one
+  severed_relationships(remote_account_id) -> accounts(id) foreign-key many-to-one
+  status_edits(account_id) -> accounts(id) foreign-key many-to-one
+  status_edits(quote_id) -> quotes(id) inferred many-to-one
+  status_edits(status_id) -> statuses(id) foreign-key many-to-one
+  status_pins(account_id) -> accounts(id) foreign-key many-to-one
+  status_pins(status_id) -> statuses(id) foreign-key many-to-one
+  status_stats(status_id) -> statuses(id) foreign-key one-to-one
+  status_trends(account_id) -> accounts(id) foreign-key many-to-one
+  status_trends(status_id) -> statuses(id) foreign-key one-to-one
+  statuses(account_id) -> accounts(id) foreign-key many-to-one
+  statuses(application_id) -> applications(id) orm many-to-one
+  statuses(conversation_id) -> conversations(id) orm many-to-one
+  statuses(id) -> tags(id) orm many-to-many
+  statuses(in_reply_to_account_id) -> accounts(id) foreign-key many-to-one
+  statuses(in_reply_to_id) -> statuses(id) foreign-key many-to-one
+  statuses(poll_id) -> polls(id) orm many-to-one
+  statuses(reblog_of_id) -> statuses(id) foreign-key many-to-one
+  statuses_tags(status_id) -> statuses(id) foreign-key many-to-one
+  statuses_tags(tag_id) -> tags(id) foreign-key many-to-one
+  subscriptions(fasp_provider_id) -> providers() orm many-to-one
+  subscriptions(provider_id) -> providers() orm many-to-one
+  tag_follows(account_id) -> accounts(id) foreign-key many-to-one
+  tag_follows(tag_id) -> tags(id) foreign-key many-to-one
+  tag_trends(tag_id) -> tags(id) foreign-key one-to-one
+  tagged_objects(status_id) -> statuses(id) foreign-key many-to-one
+  tags(id) -> accounts(id) foreign-key many-to-many
+  tags(id) -> accounts(id) orm many-to-many
+  tmp_account_summaries(account_id) -> accounts(id) foreign-key one-to-one
+  tmp_global_follow_recommendations(account_id) -> accounts(id) foreign-key one-to-one
+  tombstones(account_id) -> accounts(id) foreign-key many-to-one
+  user_invite_requests(user_id) -> users(id) foreign-key one-to-one
+  user_ips(user_id) -> users(id) orm many-to-one
+  users(account_id) -> accounts(id) foreign-key one-to-one
+  users(created_by_application_id) -> oauth_applications(id) foreign-key many-to-one
+  users(invite_id) -> invites(id) foreign-key many-to-one
+  users(role_id) -> user_roles(id) foreign-key many-to-one
+  web_push_subscriptions(access_token_id) -> oauth_access_tokens(id) foreign-key many-to-one
+  web_push_subscriptions(user_id) -> users(id) foreign-key many-to-one
+  web_settings(user_id) -> users(id) foreign-key one-to-one
+  webauthn_credentials(user_id) -> users(id) foreign-key many-to-one
+engines: elasticsearch, postgresql, redis
+warnings: 19

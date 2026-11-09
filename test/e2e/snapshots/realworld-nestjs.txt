@@ -1,0 +1,12 @@
+entities: 5
+  article [table]: id, slug, title, description, body, created, updated, tagList, authorId, favoriteCount
+  comment [table]: id, body, articleId
+  follows [table]: id, followerId, followingId
+  tag [table]: id, tag
+  user [table]: id, username, email, bio, image, password
+relations: 3
+  article(authorId) -> user(id) orm many-to-one
+  comment(articleId) -> article(id) orm many-to-one
+  user(id) -> article(id) orm many-to-many
+engines: mysql
+warnings: 0

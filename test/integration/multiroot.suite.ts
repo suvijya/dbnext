@@ -85,6 +85,14 @@ export async function run(): Promise<void> {
     });
   });
 
+  await step('openSource resolves a folder whose name contains a space and a #', async () => {
+    const gadgets = api.model!.entities.find((e) => e.id === 'gadgets')!;
+    await vscode.commands.executeCommand('dbnext.openSource', gadgets.source);
+    await until('gadgets editor', () => {
+      const e = vscode.window.activeTextEditor;
+      return e && /weird dir#1\/extra\.sql$/.test(decodeURIComponent(e.document.uri.path)) ? e : undefined;
+    });
+  });
   await step('Markdown export writes folder-aware links for every workspace folder', async () => {
     const uri = vscode.Uri.joinPath(alpha.uri, 'DBMAP.md');
     void vscode.commands.executeCommand('dbnext.exportMarkdown');
@@ -102,12 +110,10 @@ export async function run(): Promise<void> {
     assert.match(md, /\(catalog\/items\.sql#L\d+\)/);
     // A file in the SECOND folder is linked with a cross-folder relative path.
     assert.match(md, /\(\.\.\/beta\/warehouse\/stock\.sql#L\d+\)/);
-    // The entity defined under a folder whose name contains a space and a '#' is still exported.
-    // NOTE: its link is currently mangled ("weird%20dir#1/...": the path '#' is read as the URL
-    // fragment, so the "#Lnn" anchor is lost). The root cause is `location()` in src/core/export.ts
-    // (`encodeURI` leaves '#' untouched and cannot tell a path '#' from the fragment separator); that
-    // file is outside this agent's area, so the bug is only documented here, not asserted/locked.
+    // A path with a space and a '#' is percent-encoded so '#' stays part of the path and the
+    // trailing #Lnn anchor survives.
     assert.match(md, /### gadgets/);
+    assert.match(md, /\(weird%20dir%231\/extra\.sql#L\d+\)/);
   });
 
   console.log('All multi-root integration tests passed.');

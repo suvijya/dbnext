@@ -18,6 +18,14 @@ const shared = {
   define: { 'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development') },
 };
 
+// Desktop-only live database drivers (pg, mysql2) must never reach the browser bundle: swap in a stub.
+const liveDbStub = {
+  name: 'live-db-stub',
+  setup(build) {
+    build.onResolve({ filter: /[\\/]liveDb$/ }, () => ({ path: new URL('./src/extension/liveDbWeb.ts', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1') }));
+  },
+};
+
 const builds = [
   {
     ...shared,
@@ -26,7 +34,7 @@ const builds = [
     platform: 'node',
     format: 'cjs',
     target: 'node16',
-    external: ['vscode'],
+    external: ['vscode', 'pg-native'],
   },
   {
     ...shared,
@@ -37,6 +45,7 @@ const builds = [
     target: 'es2022',
     external: ['vscode'],
     mainFields: ['browser', 'module', 'main'],
+    plugins: [liveDbStub],
   },
   {
     ...shared,
@@ -48,6 +57,17 @@ const builds = [
     loader: { '.css': 'css' },
   },
 ];
+
+// CLI (Node): dist/cli.js, run through the package.json "bin" entry. Never loaded by the extension.
+builds.push({
+  ...shared,
+  entryPoints: ['src/cli/cli.ts'],
+  outfile: 'dist/cli.js',
+  platform: 'node',
+  format: 'cjs',
+  target: 'node16',
+  banner: { js: '#!/usr/bin/env node' },
+});
 
 if (watch) {
   const contexts = await Promise.all(builds.map((b) => esbuild.context(b)));

@@ -60,7 +60,7 @@ body {
   border: 0;
 }
 
-/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+/* â”€â”€ Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .toolbar {
   display: flex;
@@ -191,7 +191,7 @@ body {
   padding: 0 4px;
 }
 
-/* ── Popovers ────────────────────────────────────────────────────────────── */
+/* â”€â”€ Popovers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .tb-popover-host {
   position: relative;
@@ -262,7 +262,7 @@ body {
   background: var(--vscode-list-hoverBackground);
 }
 
-/* ── Layout ──────────────────────────────────────────────────────────────── */
+/* â”€â”€ Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .main {
   flex: 1 1 auto;
@@ -298,7 +298,7 @@ body {
   cursor: grabbing;
 }
 
-/* ── Cards ───────────────────────────────────────────────────────────────── */
+/* â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .node {
   cursor: pointer;
@@ -429,7 +429,7 @@ body {
   stroke-width: 2.6;
 }
 
-/* ── Edges ───────────────────────────────────────────────────────────────── */
+/* â”€â”€ Edges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .edge-line {
   fill: none;
@@ -511,7 +511,7 @@ body {
   opacity: 0.18;
 }
 
-/* ── Minimap ─────────────────────────────────────────────────────────────── */
+/* â”€â”€ Minimap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .minimap {
   position: absolute;
@@ -547,7 +547,7 @@ body {
   stroke-width: 1.2;
 }
 
-/* ── Side panel ──────────────────────────────────────────────────────────── */
+/* â”€â”€ Side panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .side-panel {
   flex: 0 0 clamp(280px, 26vw, 380px);
@@ -767,7 +767,7 @@ body {
   color: var(--vscode-charts-yellow, #d7a300);
 }
 
-/* ── Overlays ────────────────────────────────────────────────────────────── */
+/* â”€â”€ Overlays â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .overlay {
   position: absolute;
@@ -912,7 +912,7 @@ body {
   }
 }
 
-/* ── Per-schema accent strip colours ─────────────────────────────────────── */
+/* â”€â”€ Per-schema accent strip colours â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .accent-0 { fill: var(--vscode-charts-blue, #3a9bdc); }
 .accent-1 { fill: var(--vscode-charts-green, #4aa564); }
@@ -922,3 +922,192 @@ body {
 .accent-5 { fill: var(--vscode-charts-yellow, #d7a300); }
 .accent-6 { fill: var(--vscode-charts-foreground, #888); }
 .accent-7 { fill: var(--vscode-textLink-foreground, #3a9bdc); }
+
+/* Provenance ("Why is this here?") */
+.badge-uncertain {
+  background: transparent;
+  color: var(--vscode-editorWarning-foreground, var(--vscode-foreground));
+  border: 1px dashed var(--vscode-editorWarning-foreground, currentColor);
+}
+
+.is-uncertain {
+  font-style: italic;
+}
+
+.prov {
+  margin: 0 0 8px;
+  padding: 4px 0 4px 8px;
+  border-left: 2px solid var(--vscode-panel-border, currentColor);
+}
+
+.prov.is-uncertain {
+  border-left-style: dashed;
+  border-left-color: var(--vscode-editorWarning-foreground, currentColor);
+}
+
+.prov-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.prov-label {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.prov-notes {
+  margin: 4px 0;
+}
+
+.prov-refs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Notice shown when nothing is drawable (everything filtered out, enum-only models, ...). */
+.empty-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  pointer-events: none;
+}
+.empty-view .btn {
+  pointer-events: auto;
+}
+
+@media (forced-colors: active) {
+  .node .card-bg { stroke: CanvasText; }
+  .node:focus-visible .card-bg, .node.selected .card-bg { stroke: Highlight; stroke-width: 3px; }
+}
+
+/* Tiny panels: the side panel floats over the diagram, the minimap is dropped, the toolbar scrolls. */
+@media (max-width: 640px) {
+  .main { position: relative; }
+  .side-panel { position: absolute; top: 0; right: 0; bottom: 0; z-index: 6; flex: none; width: min(280px, calc(100% - 40px)); }
+  .minimap { display: none; }
+}
+@media (max-height: 360px) {
+  .toolbar { flex-wrap: nowrap; overflow-x: auto; }
+  .minimap { display: none; }
+}
+
+/* â”€â”€ Schema diff view â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.diff-view {
+  --dbn-add: var(--vscode-charts-green, #3fb950);
+  --dbn-del: var(--vscode-charts-red, #f85149);
+  --dbn-chg: var(--vscode-charts-orange, #d29922);
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  background: var(--vscode-editor-background);
+}
+.diff-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--dbn-card-border); }
+.diff-heading { flex: 1; min-width: 0; }
+.diff-title { margin: 0; font-size: 1.15em; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.diff-summary-line { color: var(--vscode-descriptionForeground); margin-top: 4px; }
+.diff-btn { font: inherit; padding: 4px 12px; border-radius: 2px; cursor: pointer; border: 1px solid var(--dbn-card-border); color: var(--vscode-button-secondaryForeground, var(--vscode-foreground)); background: var(--vscode-button-secondaryBackground, transparent); }
+.diff-btn:hover { background: var(--vscode-button-secondaryHoverBackground, var(--vscode-list-hoverBackground)); }
+.diff-body { flex: 1; display: flex; min-height: 0; }
+.diff-list { width: 280px; flex: none; overflow: auto; padding: 12px 16px; border-right: 1px solid var(--dbn-card-border); }
+.diff-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.diff-chip { padding: 1px 8px; border-radius: 10px; font-size: 0.9em; border: 1px solid currentColor; }
+.diff-chip.added, .diff-item.added .diff-mark, .diff-col.added .diff-mark, .diff-card.added .diff-mark { color: var(--dbn-add); }
+.diff-chip.removed, .diff-item.removed .diff-mark, .diff-col.removed .diff-mark, .diff-card.removed .diff-mark { color: var(--dbn-del); }
+.diff-chip.changed, .diff-item.changed .diff-mark, .diff-col.changed .diff-mark, .diff-card.changed .diff-mark { color: var(--dbn-chg); }
+.diff-list-title { margin: 14px 0 4px; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; color: var(--vscode-descriptionForeground); }
+.diff-items { list-style: none; margin: 0; padding: 0; }
+.diff-item { padding: 2px 0; overflow-wrap: anywhere; }
+.diff-mark { display: inline-block; width: 1.4em; font-weight: 700; font-family: var(--vscode-editor-font-family, monospace); }
+.diff-cards { flex: 1; overflow: auto; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-content: start; }
+.diff-empty { grid-column: 1 / -1; color: var(--vscode-descriptionForeground); }
+.diff-card { background: var(--dbn-card-bg); border: 1px solid var(--dbn-card-border); border-left: 4px solid var(--dbn-card-border); border-radius: var(--dbn-radius); box-shadow: var(--dbn-shadow); overflow: hidden; }
+.diff-card.added { border-left-color: var(--dbn-add); }
+.diff-card.removed { border-left-color: var(--dbn-del); }
+.diff-card.changed { border-left-color: var(--dbn-chg); }
+.diff-card-head { display: flex; align-items: baseline; gap: 6px; padding: 8px 12px; font-weight: 600; border-bottom: 1px solid var(--dbn-card-border); }
+.diff-card-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.diff-card-kind { font-weight: 400; font-size: 0.85em; color: var(--vscode-descriptionForeground); }
+.diff-col { display: flex; gap: 6px; padding: 3px 12px; font-family: var(--vscode-editor-font-family, monospace); }
+.diff-col.added { background: color-mix(in srgb, var(--dbn-add) 14%, transparent); }
+.diff-col.removed { background: color-mix(in srgb, var(--dbn-del) 14%, transparent); }
+.diff-col.removed .diff-col-name { text-decoration: line-through; }
+.diff-col.changed { background: color-mix(in srgb, var(--dbn-chg) 14%, transparent); }
+.diff-col.unchanged { color: var(--vscode-descriptionForeground); font-style: italic; }
+.diff-col-name { overflow-wrap: anywhere; }
+.diff-col-detail { margin-left: auto; text-align: right; color: var(--vscode-descriptionForeground); overflow-wrap: anywhere; }
+.diff-col { flex-wrap: wrap; }
+.diff-col-name { flex: none; max-width: 100%; }
+.diff-col-detail { flex: 1 1 auto; min-width: 0; }
+.diff-mark { flex: none; }
+
+.card-note-dot {
+  fill: var(--vscode-textLink-foreground, #3794ff);
+  pointer-events: none;
+}
+
+.side-note {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 54px;
+  margin: 4px 0;
+  padding: 6px 8px;
+  resize: vertical;
+  font: inherit;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+  border-radius: 4px;
+}
+
+.side-note:focus {
+  outline: 1px solid var(--vscode-focusBorder);
+}
+
+.side-note-hint {
+  margin: 0 0 4px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.col-note-row td {
+  padding-top: 0;
+}
+
+.col-note {
+  min-height: 30px;
+  margin: 0 0 4px;
+  font-size: 11px;
+}
+
+.col-comment {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.note-toggle {
+  margin-left: 4px;
+  opacity: 0.55;
+  font-size: 11px;
+}
+
+.note-toggle:hover,
+.note-toggle.is-open {
+  opacity: 1;
+}
+
+.view-row { display: flex; align-items: center; }
+.view-row .tb-menu-item { flex: 1; }
+.view-save { display: flex; gap: 4px; padding: 6px; }

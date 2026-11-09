@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { stripVolatile, toMarkdown } from '../core/export';
 import type { SchemaModel, SourceRef } from '../core/model';
+import type { Notes } from '../core/notes';
 import { relativePath } from '../core/scan';
 
 export const MARKETPLACE_URL = 'https://marketplace.visualstudio.com/items?itemName=suvijya.dbnext';
@@ -12,6 +13,8 @@ function ignoreCase(uri: vscode.Uri): boolean {
 
 export interface MarkdownTarget {
   model: SchemaModel;
+  /** User notes to include in the document. */
+  notes?: Notes;
   /** Maps a `SourceRef.file` to its URI. */
   resolve(file: string): vscode.Uri | undefined;
   /** Workspace-relative path (already sanitized). */
@@ -36,6 +39,7 @@ export async function writeMarkdown(
   const dir = vscode.Uri.joinPath(uri, '..');
   const text = toMarkdown(target.model, {
     generatorUrl: MARKETPLACE_URL,
+    notes: target.notes,
     fileLink: (ref: SourceRef) => {
       const file = target.resolve(ref.file);
       if (!file || file.scheme !== uri.scheme || file.authority !== uri.authority) return undefined;
@@ -69,5 +73,22 @@ export async function saveSvgFile(svg: string): Promise<vscode.Uri | undefined> 
   });
   if (!uri) return undefined;
   await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(svg));
+  return uri;
+}
+
+/** Asks where to save and writes a PNG produced by the webview (base64-encoded). */
+export async function savePngFile(base64: string): Promise<vscode.Uri | undefined> {
+  const folder = vscode.workspace.workspaceFolders?.[0];
+  const uri = await vscode.window.showSaveDialog({
+    defaultUri: folder ? vscode.Uri.joinPath(folder.uri, 'dbmap.png') : undefined,
+    filters: { 'PNG image': ['png'] },
+    saveLabel: 'Export',
+    title: 'Export DB Map as PNG',
+  });
+  if (!uri) return undefined;
+  const bin = atob(base64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  await vscode.workspace.fs.writeFile(uri, bytes);
   return uri;
 }

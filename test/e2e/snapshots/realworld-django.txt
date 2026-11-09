@@ -1,0 +1,16 @@
+entities: 5
+  articles_article [table]: created_at, updated_at, id, slug, title, description, body, author_id
+  articles_comment [table]: created_at, updated_at, id, body, article_id, author_id
+  articles_tag [table]: created_at, updated_at, id, tag, slug
+  authentication_user [table]: created_at, updated_at, id, username, email, is_active, is_staff
+  profiles_profile [table]: created_at, updated_at, id, user_id, bio, image
+relations: 7
+  articles_article(author_id) -> profiles_profile(id) orm many-to-one
+  articles_article(id) -> articles_tag(id) orm many-to-many
+  articles_comment(article_id) -> articles_article(id) orm many-to-one
+  articles_comment(author_id) -> profiles_profile(id) orm many-to-one
+  profiles_profile(id) -> articles_article(id) orm many-to-many
+  profiles_profile(id) -> profiles_profile(id) orm many-to-many
+  profiles_profile(user_id) -> authentication_user(id) orm one-to-one
+engines: sqlite
+warnings: 0

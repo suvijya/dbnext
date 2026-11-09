@@ -1,0 +1,23 @@
+entities: 7
+  _articletotag [table]: A, B
+  _userfavorites [table]: A, B
+  _userfollows [table]: A, B
+  article [table]: id, slug, title, description, body, createdAt, updatedAt, authorId
+  comment [table]: id, createdAt, updatedAt, body, articleId, authorId
+  tag [table]: id, name
+  user [table]: id, email, username, password, image, bio, demo
+relations: 12
+  _articletotag(A) -> article(id) foreign-key many-to-one
+  _articletotag(B) -> tag(id) foreign-key many-to-one
+  _userfavorites(A) -> article(id) foreign-key many-to-one
+  _userfavorites(B) -> user(id) foreign-key many-to-one
+  _userfollows(A) -> user(id) foreign-key many-to-one
+  _userfollows(B) -> user(id) foreign-key many-to-one
+  article(authorId) -> user(id) foreign-key many-to-one
+  article(id) -> tag(id) orm many-to-many
+  article(id) -> user(id) orm many-to-many
+  comment(articleId) -> article(id) foreign-key many-to-one
+  comment(authorId) -> user(id) foreign-key many-to-one
+  user(id) -> user(id) orm many-to-many
+engines: postgresql
+warnings: 0

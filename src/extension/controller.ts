@@ -1,12 +1,20 @@
 import * as vscode from 'vscode';
+import { diffSchemas, diffSummaryText, diffToMarkdown, type SchemaDiff } from '../core/diff';
 import { toMermaid } from '../core/export';
 import { summaryText } from '../core/format';
 import type { SchemaModel, SourceRef } from '../core/model';
 import { sanitizeLayout, type Layout, type MapStatus } from '../core/protocol';
 import { globGroup, includePatterns, type ParserRegistry } from '../core/scan';
 import { CACHE_SETTINGS, SCAN_SETTINGS, readConfig, type DbNextConfig } from './config';
-import { saveSvgFile, writeMarkdown } from './exporter';
+import { savePngFile, saveSvgFile, writeMarkdown } from './exporter';
+import { WORKING_TREE, pickComparison, scanAtRef } from './gitRef';
 import { Log } from './log';
+import { NotesStore } from './notesStore';
+import { ViewsStore } from './viewsStore';
+import { serializeViews, type SavedView } from '../core/views';
+import { toDbml, toPlantUml } from '../core/exportDiagrams';
+import { emptyNotes, serializeNotes, type Notes } from '../core/notes';
+import { introspectToModel } from '../core/introspect';
 import { MapPanel, type MapHost } from './mapPanel';
 import { Scanner, excludeMatcher, type ScanOutput } from './scanner';
 import { StatusBar } from './statusBar';
@@ -46,8 +54,13 @@ export class Controller implements MapHost, vscode.Disposable {
   statusMessage: string | undefined;
   readonly onDidChange: vscode.Event<void>;
 
+  private lastDiff: { diff: SchemaDiff; base: string; head: string } | undefined;
   private uris = new Map<string, vscode.Uri>();
   private modelSignature = '';
+  private notes: Notes = emptyNotes();
+  private readonly notesStore = new NotesStore(() => void this.reloadNotes());
+  private views: SavedView[] = [];
+  private readonly viewsStore = new ViewsStore(() => void this.reloadViews());
   private config: DbNextConfig;
   private excluded: RegExp;
   private readonly scanner: Scanner;
@@ -78,6 +91,8 @@ export class Controller implements MapHost, vscode.Disposable {
       this.tree,
       this.treeView,
       this.statusBar,
+      this.notesStore,
+      this.viewsStore,
       this.changed,
       vscode.window.registerWebviewPanelSerializer(MapPanel.viewType, {
         deserializeWebviewPanel: async (panel) => {
@@ -99,6 +114,10 @@ export class Controller implements MapHost, vscode.Disposable {
     this.log.info(`DBNext ${version} started; ${this.registry.parsers.length} schema parsers available.`);
     this.refreshChrome();
     this.updateWatcher();
+    this.notesStore.watch();
+    void this.reloadNotes();
+    this.viewsStore.watch();
+    void this.reloadViews();
     this.requestScan();
   }
 
@@ -121,8 +140,16 @@ export class Controller implements MapHost, vscode.Disposable {
       reg('dbnext.rescan', () => this.requestScan({ manual: true, clearCache: true })),
       reg('dbnext.exportMarkdown', () => this.exportMarkdown()),
       reg('dbnext.copyMermaid', () => this.copyMermaid()),
+      reg('dbnext.copyDbml', () => this.copyText('dbml')),
+      reg('dbnext.copyPlantUml', () => this.copyText('plantuml')),
+      reg('dbnext.exportPng', () => this.exportPng()),
+      reg('dbnext.selectView', () => this.selectView()),
       reg('dbnext.openSource', (arg?: unknown) => this.openSourceArg(arg)),
+      reg('dbnext.diffWithLiveDatabase', () => this.diffWithLiveDatabase()),
+      reg('dbnext.clearLiveDatabasePassword', () => this.clearLiveDatabasePassword()),
       reg('dbnext.showLog', () => this.log.show()),
+      reg('dbnext.compareWithRef', () => this.compareWithRef()),
+      reg('dbnext.copyDiffMarkdown', () => this.copyDiffMarkdown()),
       reg('dbnext.revealEntity', (id?: unknown) => this.revealEntity(id)),
     ];
   }
@@ -166,6 +193,82 @@ export class Controller implements MapHost, vscode.Disposable {
     }
   }
 
+  // ── schema diff ──
+
+  /** `DBNext: Compare with Git Ref…` - diffs the schema at a git ref against another ref or the working tree. */
+  async compareWithRef(): Promise<void> {
+    try {
+      const picked = await pickComparison();
+      if (!picked) return;
+      const config = readConfig();
+      const name = vscode.workspace.name ?? 'workspace';
+      const result = await vscode.window.withProgress(
+        { location: vscode.ProgressLocation.Notification, title: `DBNext: comparing the schema of ${picked.base} with ${picked.head}`, cancellable: true },
+        async (_progress, token) => {
+          const scan = (ref: string) => scanAtRef(picked.repo, ref, this.scanner, this.registry, config, token, name);
+          const base = await scan(picked.base);
+          if (!base) return undefined;
+          const head = picked.head === WORKING_TREE ? this.model : await scan(picked.head);
+          return head ? { base, head } : undefined;
+        },
+      );
+      if (!result) return;
+      const diff = diffSchemas(result.base, result.head);
+      this.lastDiff = { diff, base: picked.base, head: picked.head };
+      this.log.info(`Schema diff ${picked.base} -> ${picked.head}: ${diffSummaryText(diff)}.`);
+      MapPanel.show(this).showDiff(diff, picked.base, picked.head);
+    } catch (e) {
+      this.log.error('Schema comparison failed', e);
+      void vscode.window.showErrorMessage(`DBNext: could not compare with a git ref (${e instanceof Error ? e.message : String(e)}).`);
+    }
+  }
+
+  /** `DBNext: Compare with Live Database` - read-only catalog introspection (opt-in), diffed against the code-derived model. */
+  async diffWithLiveDatabase(): Promise<void> {
+    try {
+      if (vscode.workspace.getConfiguration('dbnext.liveDatabase').get<boolean>('enabled') !== true) {
+        void vscode.window.showInformationMessage('DBNext: enable the "dbnext.liveDatabase.enabled" setting to compare with a live database.');
+        return;
+      }
+      const live = await import('./liveDb');
+      const conn = live.readLiveConnection();
+      if (!conn || !this.model) {
+        void vscode.window.showWarningMessage(this.model ? 'DBNext: set dbnext.liveDatabase.database and dbnext.liveDatabase.user first.' : 'DBNext: no schema has been scanned yet.');
+        return;
+      }
+      const model = this.model;
+      const rows = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'DBNext: reading the live database catalog' }, () => live.fetchCatalog(this.context.secrets, conn));
+      if (!rows) return;
+      const liveModel = introspectToModel({ ...rows, engine: conn.engine, workspaceName: conn.database });
+      const diff = diffSchemas(liveModel, model);
+      const label = `live database ${conn.database}`;
+      this.lastDiff = { diff, base: label, head: 'code' };
+      this.log.info(`Schema diff ${label} -> code: ${diffSummaryText(diff)}.`);
+      MapPanel.show(this).showDiff(diff, label, 'code');
+    } catch (e) {
+      // Only the message is logged: never connection details or passwords.
+      const message = e instanceof Error ? e.message : String(e);
+      this.log.error(`Live database comparison failed: ${message}`);
+      void vscode.window.showErrorMessage(`DBNext: could not read the live database (${message}).`);
+    }
+  }
+
+  /** `DBNext: Forget Live Database Password`. */
+  async clearLiveDatabasePassword(): Promise<void> {
+    const live = await import('./liveDb');
+    const conn = live.readLiveConnection();
+    if (conn) await live.clearPassword(this.context.secrets, conn);
+    void vscode.window.showInformationMessage('DBNext: stored live database password removed.');
+  }
+  /** `DBNext: Copy Schema Diff as Markdown` - copies the changelog of the last comparison (runs one first when there is none). */
+  async copyDiffMarkdown(): Promise<void> {
+    if (!this.lastDiff) await this.compareWithRef();
+    const last = this.lastDiff;
+    if (!last) return;
+    await vscode.env.clipboard.writeText(diffToMarkdown(last.diff, { base: last.base, head: last.head }));
+    void vscode.window.showInformationMessage(`DBNext: copied the schema changelog (${diffSummaryText(last.diff)}).`);
+  }
+
   // ── MapHost ──
 
   async copyMermaid(entityIds?: string[]): Promise<void> {
@@ -182,6 +285,62 @@ export class Controller implements MapHost, vscode.Disposable {
     void vscode.window.showInformationMessage(
       `DBNext: copied a Mermaid ER diagram of ${n} ${n === 1 ? 'table' : 'tables'}. Paste it into any Markdown file; GitHub and GitLab render it.`,
     );
+  }
+
+  async copyText(format: 'dbml' | 'plantuml', entityIds?: string[]): Promise<void> {
+    const model = this.model;
+    if (!model?.entities.length) {
+      void vscode.window.showInformationMessage(NO_SCHEMA);
+      return;
+    }
+    const known = new Set(model.entities.map((e) => e.id));
+    const ids = entityIds?.filter((id) => known.has(id));
+    const subset = ids?.length ? ids : undefined;
+    const text = format === 'dbml' ? toDbml(model, { entityIds: subset }) : toPlantUml(model, { entityIds: subset });
+    await vscode.env.clipboard.writeText(text);
+    const n = subset?.length ?? model.entities.length;
+    void vscode.window.showInformationMessage(`DBNext: copied ${format === 'dbml' ? 'DBML' : 'PlantUML'} for ${n} ${n === 1 ? 'table' : 'tables'}.`);
+  }
+
+  private exportPng(): void {
+    MapPanel.show(this).requestPng();
+  }
+
+  async savePng(base64: string): Promise<void> {
+    try {
+      const uri = await savePngFile(base64);
+      if (!uri) return;
+      const pick = await vscode.window.showInformationMessage(`DBNext: diagram saved to ${vscode.workspace.asRelativePath(uri)}.`, 'Open');
+      if (pick) await vscode.commands.executeCommand('vscode.open', uri);
+    } catch (e) {
+      this.log.error('PNG export failed', e);
+      void vscode.window.showErrorMessage('DBNext: could not save the PNG file. See the log for details.');
+    }
+  }
+
+  private async selectView(): Promise<void> {
+    const items = [{ label: 'All tables', name: undefined as string | undefined }, ...this.views.map((v) => ({ label: v.name, description: `${v.entities.length} tables`, name: v.name as string | undefined }))];
+    const pick = await vscode.window.showQuickPick(items, { title: 'DBNext: select a saved view' });
+    if (pick) MapPanel.show(this).applyView(pick.name);
+  }
+
+  getViews(): SavedView[] {
+    return this.views;
+  }
+
+  saveViews(views: SavedView[]): void {
+    this.views = views;
+    void this.viewsStore.save(views).catch((e) => {
+      this.log.error('Could not save views', e);
+      void vscode.window.showErrorMessage('DBNext: could not save .dbnext/views.json.');
+    });
+  }
+
+  private async reloadViews(): Promise<void> {
+    const loaded = await this.viewsStore.load();
+    if (serializeViews(loaded) === serializeViews(this.views)) return;
+    this.views = loaded;
+    this.changed.fire();
   }
 
   async saveSvg(svg: string): Promise<void> {
@@ -202,6 +361,25 @@ export class Controller implements MapHost, vscode.Disposable {
 
   getLayout(): Layout {
     return sanitizeLayout(this.context.workspaceState.get(LAYOUT_KEY)) ?? {};
+  }
+
+  getNotes(): Notes {
+    return this.notes;
+  }
+
+  saveNotes(notes: Notes): void {
+    this.notes = notes;
+    void this.notesStore.save(notes).catch((e) => {
+      this.log.error('Could not save notes', e);
+      void vscode.window.showErrorMessage('DBNext: could not save .dbnext/notes.json.');
+    });
+  }
+
+  private async reloadNotes(): Promise<void> {
+    const loaded = await this.notesStore.load();
+    if (serializeNotes(loaded) === serializeNotes(this.notes)) return;
+    this.notes = loaded;
+    this.changed.fire();
   }
 
   saveLayout(layout: Layout): void {
@@ -242,7 +420,7 @@ export class Controller implements MapHost, vscode.Disposable {
   }
 
   private markdownTarget(model: SchemaModel, config: DbNextConfig) {
-    return { model, resolve: (file: string) => this.resolveFile(file), exportPath: config.exportPath };
+    return { model, notes: this.notes, resolve: (file: string) => this.resolveFile(file), exportPath: config.exportPath };
   }
 
   // ── scanning ──

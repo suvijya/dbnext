@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Diagram layout: runs dagre on each connected component, then packs the components (largest first)
  * and the isolated tables into a tidy grid. Pure (no DOM); node sizes are provided by the caller so
  * this module can be unit tested in a node environment.
@@ -40,6 +40,15 @@ const RANK_SEP = 80;
 const WRAP_SEP = 36;
 /** Preferred width / height of a component. */
 const TARGET_ASPECT = 1.6;
+/**
+ * Components with more nodes than this skip dagre (ranking + crossing minimisation is super-linear
+ * and takes tens of seconds / gigabytes on ~1000 tables) and use a breadth-first grid instead.
+ */
+export const DAGRE_NODE_LIMIT = 60;
+/** ... or more edges than this (measured: 60 nodes / 500 edges ~2.5 s, 100 / 300 ~1.7 s). */
+export const DAGRE_EDGE_LIMIT = 250;
+/** Total (nodes + edges) handed to dagre per layout; the rest of the components use the grid. */
+export const DAGRE_BUDGET = 800;
 /** dagre layouts whose cards cover less of their bounding box than this are compacted. */
 const MIN_DENSITY = 0.12;
 
@@ -117,8 +126,8 @@ function neighbourOrder(nodeIds: readonly string[], adjacency: Map<string, [stri
     if (seen.has(start)) continue;
     const queue = [start];
     seen.add(start);
-    while (queue.length) {
-      const id = queue.shift()!;
+    for (let qi = 0; qi < queue.length; qi++) {
+      const id = queue[qi];
       out.push(id);
       const next = (adjacency.get(id) ?? [])
         .map(([a, b]) => (a === id ? b : a))
@@ -323,7 +332,14 @@ function layoutComponent(
   sizes: Map<string, SizedNode>,
   adjacency: Map<string, [string, string][]>,
   direction: Direction,
+  budget: { left: number },
 ): Block {
+  let edgeCount = 0;
+  for (const id of nodeIds) edgeCount += adjacency.get(id)?.length ?? 0;
+  edgeCount /= 2; // every edge is listed under both end nodes
+  const cost = nodeIds.length + edgeCount;
+  if (nodeIds.length > DAGRE_NODE_LIMIT || edgeCount > DAGRE_EDGE_LIMIT || cost > budget.left) return packIsolated(neighbourOrder(nodeIds, adjacency), sizes);
+  budget.left -= cost;
   const centers = dagreCenters(nodeIds, sizes, adjacency, direction);
   if (!centers) return packIsolated(neighbourOrder(nodeIds, adjacency), sizes); // dagre failed: keep neighbours close
   return normalise(arrange(centers, sizes, direction), sizes);
@@ -398,11 +414,12 @@ export function computeLayout(input: LayoutInput): LayoutResult {
   const ids = input.nodes.map((n) => n.id);
   const components = connectedComponents(ids, pairs);
 
+  const budget = { left: DAGRE_BUDGET };
   const connectedBlocks: Block[] = [];
   const isolated: string[] = [];
   for (const comp of components) {
     if (comp.length === 1) isolated.push(comp[0]);
-    else connectedBlocks.push(layoutComponent(comp, sizes, adjacency, input.direction));
+    else connectedBlocks.push(layoutComponent(comp, sizes, adjacency, input.direction, budget));
   }
 
   // Largest first.

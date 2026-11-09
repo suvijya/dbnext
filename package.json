@@ -2,7 +2,7 @@
   "name": "dbnext",
   "displayName": "DBNext – Database Map & ER Diagram",
   "description": "Instantly understand any project's database. Auto-detects schemas from SQL, Prisma, TypeORM, Drizzle, Sequelize, Mongoose, Django, SQLAlchemy, Rails, Laravel, GORM, JPA/Hibernate, EF Core, Ecto and more, then draws an interactive ER map.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "suvijya",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -58,6 +58,9 @@
     "onWebviewPanel:dbnext.map"
   ],
   "main": "./dist/extension.js",
+  "bin": {
+    "dbnext": "dist/cli.js"
+  },
   "browser": "./dist/web/extension.js",
   "capabilities": {
     "untrustedWorkspaces": {
@@ -66,6 +69,41 @@
     "virtualWorkspaces": true
   },
   "contributes": {
+    "walkthroughs": [
+      {
+        "id": "dbnext.gettingStarted",
+        "title": "Get started with DBNext",
+        "description": "Turn the schema files in your workspace into an interactive map.",
+        "steps": [
+          {
+            "id": "openMap",
+            "title": "Open the DB Map",
+            "description": "DBNext scans migrations, SQL, ORM models and more, then draws tables and relations.\n[Open DB Map](command:dbnext.openMap)",
+            "media": { "image": "media/screenshot.png", "altText": "DB Map showing tables, relations and the details of the selected table" },
+            "completionEvents": ["onCommand:dbnext.openMap"]
+          },
+          {
+            "id": "searchFocus",
+            "title": "Search and focus",
+            "description": "Search for tables and columns in the toolbar, select a table to see its details, and press F to focus on it and its neighbours. Arrow keys move between connected tables.",
+            "media": { "image": "media/screenshot-large.png", "altText": "A 100-table schema focused on one table" }
+          },
+          {
+            "id": "export",
+            "title": "Export your schema",
+            "description": "Export Markdown docs, or copy Mermaid, DBML or PlantUML from the Export menu.\n[Export Markdown](command:dbnext.exportMarkdown)",
+            "media": { "image": "media/screenshot.png", "altText": "DB Map diagram of a database schema" },
+            "completionEvents": ["onCommand:dbnext.exportMarkdown"]
+          },
+          {
+            "id": "settings",
+            "title": "Tune the settings",
+            "description": "Exclude folders, disable sources or turn file watching on or off.\n[Open DBNext settings](command:workbench.action.openSettings?%5B%22dbnext%22%5D)",
+            "media": { "image": "media/dbnext.svg", "altText": "DBNext logo" }
+          }
+        ]
+      }
+    ],
     "commands": [
       {
         "command": "dbnext.openMap",
@@ -92,6 +130,30 @@
         "icon": "$(copy)"
       },
       {
+        "command": "dbnext.copyDbml",
+        "title": "Copy DBML",
+        "category": "DBNext",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "dbnext.copyPlantUml",
+        "title": "Copy PlantUML ER Diagram",
+        "category": "DBNext",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "dbnext.exportPng",
+        "title": "Export DB Map as PNG",
+        "category": "DBNext",
+        "icon": "$(file-media)"
+      },
+      {
+        "command": "dbnext.selectView",
+        "title": "Select Saved View",
+        "category": "DBNext",
+        "icon": "$(filter)"
+      },
+      {
         "command": "dbnext.revealInMap",
         "title": "Show in DB Map",
         "category": "DBNext",
@@ -102,6 +164,29 @@
         "title": "Go to Definition",
         "category": "DBNext",
         "icon": "$(go-to-file)"
+      },
+      {
+        "command": "dbnext.compareWithRef",
+        "title": "Compare with Git Ref…",
+        "category": "DBNext",
+        "icon": "$(git-compare)"
+      },
+      {
+        "command": "dbnext.copyDiffMarkdown",
+        "title": "Copy Schema Diff as Markdown",
+        "category": "DBNext",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "dbnext.diffWithLiveDatabase",
+        "title": "Compare with Live Database (read-only)",
+        "category": "DBNext",
+        "icon": "$(database)"
+      },
+      {
+        "command": "dbnext.clearLiveDatabasePassword",
+        "title": "Forget Live Database Password",
+        "category": "DBNext"
       },
       {
         "command": "dbnext.showLog",
@@ -173,9 +258,19 @@
           "group": "export@1"
         },
         {
-          "command": "dbnext.showLog",
+          "command": "dbnext.copyDbml",
           "when": "view == dbnext.schema",
           "group": "export@2"
+        },
+        {
+          "command": "dbnext.copyPlantUml",
+          "when": "view == dbnext.schema",
+          "group": "export@3"
+        },
+        {
+          "command": "dbnext.showLog",
+          "when": "view == dbnext.schema",
+          "group": "export@4"
         }
       ],
       "view/item/context": [
@@ -201,6 +296,14 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "dbnext.diffWithLiveDatabase",
+          "when": "config.dbnext.liveDatabase.enabled && !isWeb"
+        },
+        {
+          "command": "dbnext.clearLiveDatabasePassword",
+          "when": "config.dbnext.liveDatabase.enabled && !isWeb"
+        },
         {
           "command": "dbnext.revealInMap",
           "when": "false"
@@ -274,7 +377,12 @@
               "liquibase",
               "efcore",
               "ecto",
-              "seaorm"
+              "seaorm",
+              "hibernate",
+              "doctrinemap",
+              "graphql",
+              "zenstack",
+              "mongovalidator"
             ]
           },
           "default": [],
@@ -302,6 +410,17 @@
           "default": true,
           "description": "Show the DB Map summary in the status bar."
         },
+        "dbnext.liveDatabase.enabled": {
+          "type": "boolean",
+          "default": false,
+          "scope": "machine",
+          "description": "Allow DBNext to connect to a database and run read-only catalog queries to compare it with the code-derived model. Desktop only. The password is kept in VS Code SecretStorage, never in settings."
+        },
+        "dbnext.liveDatabase.engine": { "type": "string", "enum": ["postgresql", "mysql"], "default": "postgresql", "scope": "machine", "description": "Database engine (PostgreSQL or MySQL/MariaDB)." },
+        "dbnext.liveDatabase.host": { "type": "string", "default": "localhost", "scope": "machine", "description": "Database host." },
+        "dbnext.liveDatabase.port": { "type": "number", "default": 0, "scope": "machine", "description": "Database port (0 = engine default)." },
+        "dbnext.liveDatabase.database": { "type": "string", "default": "", "scope": "machine", "description": "Database name." },
+        "dbnext.liveDatabase.user": { "type": "string", "default": "", "scope": "machine", "description": "Database user (use a read-only account)." },
         "dbnext.export.path": {
           "type": "string",
           "default": "DBMAP.md",
@@ -322,6 +441,7 @@
     "typecheck": "tsc --noEmit -p . && tsc --noEmit -p src/webview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "vitest run --config vitest.e2e.config.mts",
     "test:integration": "node esbuild.mjs && node test/integration/runTest.mjs",
     "vscode:prepublish": "node esbuild.mjs --production",
     "package": "vsce package --no-dependencies"
@@ -329,10 +449,13 @@
   "devDependencies": {
     "@dagrejs/dagre": "3.1.1",
     "@types/node": "22.20.4",
+    "@types/pg": "8.23.1",
     "@types/vscode": "1.80.0",
     "@vscode/test-electron": "3.1.0",
     "@vscode/vsce": "4.0.0",
     "esbuild": "0.28.2",
+    "mysql2": "3.24.6",
+    "pg": "8.23.1",
     "typescript": "7.0.2",
     "vitest": "5.0.2"
   }

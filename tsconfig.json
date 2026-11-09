@@ -1,4 +1,4 @@
-{
+﻿{
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
@@ -16,6 +16,6 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["src/core/**/*.ts", "src/parsers/**/*.ts", "src/extension/**/*.ts", "test/unit/**/*.ts", "test/integration/**/*.ts", "vitest.config.mts"],
+  "include": ["src/core/**/*.ts", "src/parsers/**/*.ts", "src/extension/**/*.ts", "src/cli/**/*.ts", "test/unit/**/*.ts", "test/integration/**/*.ts", "test/e2e/**/*.ts", "vitest.config.mts", "vitest.e2e.config.mts"],
   "exclude": ["node_modules", "dist", "src/webview"]
 }

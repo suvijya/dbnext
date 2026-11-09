@@ -1,7 +1,7 @@
 /**
  * The interactive SVG canvas: renders cards + edges, handles pan / zoom / drag / selection, drives
- * the minimap and builds the standalone SVG export. Pan and zoom only touch the world transform —
- * never re-layout — so it stays responsive on large schemas.
+ * the minimap and builds the standalone SVG export. Pan and zoom only touch the world transform â€”
+ * never re-layout â€” so it stays responsive on large schemas.
  */
 
 import { clear, svg } from './dom';
@@ -21,9 +21,12 @@ export interface DiagramCallbacks {
   onManualMove(positions: Record<string, Pos>): void;
 }
 
+import type { Notes } from '../core/notes';
+
 export interface GraphRenderOptions {
   accentClassOf(id: string): string | undefined;
   nameOf(id: string): string;
+  notes?: Notes;
 }
 
 const MIN_SCALE = 0.08;
@@ -63,7 +66,7 @@ export class Diagram {
     private readonly container: HTMLElement,
     private readonly cb: DiagramCallbacks,
   ) {
-    this.svgRoot = svg('svg', { class: 'diagram', 'aria-label': 'Database diagram' });
+    this.svgRoot = svg('svg', { class: 'diagram', role: 'group', 'aria-label': 'Database diagram. Tab between tables; Enter selects; arrow keys move to connected tables.' });
     this.world = svg('g', { class: 'world' });
     this.edgesLayer = svg('g', { class: 'edges' });
     this.nodesLayer = svg('g', { class: 'nodes' });
@@ -77,10 +80,13 @@ export class Diagram {
     this.bindEvents();
   }
 
-  // ── Rendering ────────────────────────────────────────────────────────────────────────────────
+  // â”€â”€ Rendering â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   setGraph(graph: VisibleGraph, metrics: Map<string, CardMetrics>, positions: Map<string, Pos>, opts: GraphRenderOptions): void {
     this.graph = graph;
+    // A drag in progress would point at a node that is about to be replaced (or removed).
+    this.dragging = null;
+    if (this.selection && !graph.ids.has(this.selection)) this.selection = null;
     clear(this.nodesLayer);
     clear(this.edgesLayer);
     this.nodes.clear();
@@ -94,7 +100,7 @@ export class Diagram {
       if (!m) continue;
       const pos = positions.get(e.id) ?? { x: 0, y: 0 };
       this.positions.set(e.id, pos);
-      const handles = createCard(m, opts.accentClassOf(e.id));
+      const handles = createCard(m, opts.accentClassOf(e.id), opts.notes);
       handles.group.setAttribute('transform', `translate(${pos.x} ${pos.y})`);
       this.nodesLayer.appendChild(handles.group);
       this.nodes.set(e.id, { group: handles.group, handles, metrics: m });
@@ -122,7 +128,7 @@ export class Diagram {
     list.push(view);
   }
 
-  // ── Viewport ─────────────────────────────────────────────────────────────────────────────────
+  // â”€â”€ Viewport â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getViewport(): Viewport {
     return { ...this.vp };
@@ -150,6 +156,17 @@ export class Diagram {
       rects.push({ x: p.x, y: p.y, width: entry.metrics.width, height: entry.metrics.height });
     }
     return boundsOf(rects);
+  }
+
+  /** True when at least part of the content would be visible with viewport p. */
+  isInView(vp: Viewport): boolean {
+    const b = this.contentBounds();
+    if (!b) return true;
+    const { w, h } = this.size();
+    const s = clampScale(vp.scale);
+    const x0 = b.x * s + vp.x;
+    const y0 = b.y * s + vp.y;
+    return x0 < w - 40 && y0 < h - 40 && x0 + b.width * s > 40 && y0 + b.height * s > 40;
   }
 
   fit(animate = false): void {
@@ -228,7 +245,7 @@ export class Diagram {
     requestAnimationFrame(step);
   }
 
-  // ── Selection & highlighting ──────────────────────────────────────────────────────────────────
+  // â”€â”€ Selection & highlighting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getSelection(): string | null {
     return this.selection;
@@ -251,6 +268,7 @@ export class Diagram {
     const neighbors = sel ? this.graph?.neighbors.get(sel) ?? new Set<string>() : new Set<string>();
     for (const [id, entry] of this.nodes) {
       entry.group.classList.toggle('selected', id === sel);
+      entry.group.setAttribute('aria-pressed', id === sel ? 'true' : 'false');
       entry.group.classList.toggle('neighbor', !!sel && neighbors.has(id));
       entry.group.classList.toggle('dimmed', !!sel && id !== sel && !neighbors.has(id));
     }
@@ -282,7 +300,7 @@ export class Diagram {
     this.searchMatches = next;
   }
 
-  // ── Interaction ───────────────────────────────────────────────────────────────────────────────
+  // â”€â”€ Interaction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   private bindEvents(): void {
     const sr = this.svgRoot;
@@ -446,7 +464,7 @@ export class Diagram {
     return this.graph ? this.graph.entities.map((e) => e.id) : [];
   }
 
-  // ── Minimap ───────────────────────────────────────────────────────────────────────────────────
+  // â”€â”€ Minimap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   setMinimapVisible(v: boolean): void {
     this.minimap.setVisible(v);
@@ -477,7 +495,7 @@ export class Diagram {
     this.minimap.setViewport(view);
   }
 
-  // ── SVG export ────────────────────────────────────────────────────────────────────────────────
+  // â”€â”€ SVG export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   buildExportSvg(): string {
     const bounds = this.contentBounds();

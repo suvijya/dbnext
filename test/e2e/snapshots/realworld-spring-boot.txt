@@ -1,0 +1,21 @@
+entities: 7
+  article_favorites [table]: article_id, user_id
+  article_tags [table]: article_id, tag_id
+  articles [table]: id, user_id, slug, title, description, body, created_at, updated_at
+  comments [table]: id, body, article_id, user_id, created_at, updated_at
+  follows [table]: user_id, follow_id
+  tags [table]: id, name
+  users [table]: id, username, password, email, bio, image
+relations: 10
+  article_favorites(article_id) -> articles(id) inferred many-to-one
+  article_favorites(user_id) -> users(id) inferred many-to-one
+  article_tags(article_id) -> articles(id) inferred many-to-one
+  article_tags(tag_id) -> tags(id) inferred many-to-one
+  articles(id) -> tags(id) inferred many-to-many
+  articles(id) -> users(id) inferred many-to-many
+  articles(user_id) -> users(id) inferred many-to-one
+  comments(article_id) -> articles(id) inferred many-to-one
+  comments(user_id) -> users(id) inferred many-to-one
+  follows(user_id) -> users(id) inferred many-to-one
+engines: sqlite
+warnings: 0

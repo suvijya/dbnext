@@ -5,10 +5,11 @@
 
 import type { Entity } from '../core/model';
 import { columnType, qualifiedName } from '../core/format';
+import { columnNote, tableNote, type Notes } from '../core/notes';
 import { svg, svgText } from './dom';
 import { kindGlyph, kindIcon } from './icons';
 import type { CardMetrics } from './cardLayout';
-import { HEADER_H, MORE_H, PAD_X, KEY_COL_W, ROW_H } from './cardLayout';
+import { clip, HEADER_H, MORE_H, PAD_X, KEY_COL_W, ROW_H } from './cardLayout';
 
 export interface CardHandles {
   group: SVGGElement;
@@ -19,7 +20,12 @@ export interface CardHandles {
 
 const KEY_CLASS: Record<string, string> = { PK: 'key-pk', FK: 'key-fk', UK: 'key-uk' };
 
-export function createCard(metrics: CardMetrics, accentClass: string | undefined): CardHandles {
+/** Tooltip text combining the schema comment and the user note. */
+function tip(comment: string | undefined, note: string | undefined): string {
+  return [comment, note ? `Note: ${note}` : ''].filter(Boolean).join('\n\n');
+}
+
+export function createCard(metrics: CardMetrics, accentClass: string | undefined, notes?: Notes): CardHandles {
   const e: Entity = metrics.entity;
   const group = svg('g', {
     class: `node${e.external ? ' node-external' : ''}${e.joinTable ? ' node-join' : ''}`,
@@ -52,15 +58,20 @@ export function createCard(metrics: CardMetrics, accentClass: string | undefined
   const header = svg('g', { class: 'card-header' });
   header.appendChild(kindIcon(kindGlyph(e), PAD_X, (HEADER_H - 14) / 2 + 1, 15));
   const titleX = PAD_X + 20;
-  const title = svgText(e.name, { class: 'card-title', x: titleX, y: HEADER_H / 2 });
+  const title = svgText(clip(e.name), { class: 'card-title', x: titleX, y: HEADER_H / 2 });
   title.setAttribute('dominant-baseline', 'central');
   header.appendChild(title);
   if (e.schema) {
     const badge = svg('g', { class: 'card-schema' });
-    const bt = svgText(e.schema, { x: metrics.width - PAD_X, y: HEADER_H / 2, class: 'card-schema-text', 'text-anchor': 'end' });
+    const bt = svgText(clip(e.schema, 20), { x: metrics.width - PAD_X, y: HEADER_H / 2, class: 'card-schema-text', 'text-anchor': 'end' });
     bt.setAttribute('dominant-baseline', 'central');
     badge.appendChild(bt);
     header.appendChild(badge);
+  }
+  const headTip = tip(e.comment, tableNote(notes, e.id));
+  if (headTip) {
+    header.appendChild(svg('title', {}, [headTip]));
+    header.appendChild(svg('circle', { class: 'card-note-dot', cx: metrics.width - 6, cy: 6, r: 2.5 }));
   }
   group.appendChild(header);
   group.appendChild(svg('line', { class: 'card-sep', x1: 0, y1: HEADER_H, x2: metrics.width, y2: HEADER_H }));
@@ -85,7 +96,7 @@ export function createCard(metrics: CardMetrics, accentClass: string | undefined
       }
     }
 
-    const nm = svgText(c.name, {
+    const nm = svgText(clip(c.name, 24), {
       class: `row-name${c.primaryKey ? ' is-pk' : ''}`,
       x: r.keys.length ? nameX : PAD_X,
       y: r.centerY,
@@ -93,7 +104,7 @@ export function createCard(metrics: CardMetrics, accentClass: string | undefined
     nm.setAttribute('dominant-baseline', 'central');
     g.appendChild(nm);
 
-    const typeStr = columnType(c) + (c.nullable && !c.primaryKey ? ' ?' : '');
+    const typeStr = clip(columnType(c), 14) + (c.nullable && !c.primaryKey ? ' ?' : '');
     const tp = svgText(typeStr, {
       class: `row-type${c.enumRef ? ' is-enum' : ''}`,
       x: typeX,
@@ -104,6 +115,11 @@ export function createCard(metrics: CardMetrics, accentClass: string | undefined
     if (c.enumRef) tp.appendChild(svg('title', {}, [`enum`]));
     g.appendChild(tp);
 
+    const rowTip = tip(c.comment, columnNote(notes, e.id, c.name));
+    if (rowTip) {
+      g.appendChild(svg('title', {}, [rowTip]));
+      g.appendChild(svg('circle', { class: 'card-note-dot', cx: metrics.width - 4, cy: r.centerY, r: 2 }));
+    }
     group.appendChild(g);
   }
 

@@ -1,0 +1,23 @@
+entities: 7
+  article_tag [table]: article_id, tag_id
+  articles [table]: id, user_id, slug, title, description, body, created_at, updated_at
+  comments [table]: id, user_id, article_id, body, created_at, updated_at
+  favorites [table]: user_id, article_id, created_at, updated_at
+  follows [table]: follower_id, followed_id, created_at, updated_at
+  tags [table]: id, name, created_at, updated_at
+  users [table]: id, username, email, password, bio, image, remember_token, created_at, updated_at
+relations: 12
+  article_tag(article_id) -> articles(id) foreign-key many-to-one
+  article_tag(tag_id) -> tags(id) foreign-key many-to-one
+  articles(id) -> tags(id) orm many-to-many
+  articles(user_id) -> users(id) foreign-key many-to-one
+  comments(article_id) -> articles(id) foreign-key many-to-one
+  comments(user_id) -> users(id) foreign-key many-to-one
+  favorites(article_id) -> articles(id) foreign-key many-to-one
+  favorites(user_id) -> users(id) foreign-key many-to-one
+  follows(followed_id) -> users(id) foreign-key many-to-one
+  follows(follower_id) -> users(id) foreign-key many-to-one
+  users(id) -> articles(id) foreign-key many-to-many
+  users(id) -> users(id) foreign-key many-to-many
+engines: mysql, postgresql, sqlite
+warnings: 0

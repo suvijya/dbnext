@@ -1,0 +1,12 @@
+entities: 7
+  audit [table]: id
+  person [table]: id, age, birthdate, first_name, gender, has_pets, middle_name, nicknames, nullable_column, profile, updated_at
+  person_backup [table]: id, age, birthdate, first_name, gender, has_pets, middle_name, nicknames, nullable_column, profile, updated_at
+  pet [table]: id, owner_id, species
+  toy [table]: id, pet_id, price
+  wine [table]: id, stock
+  wine_stock_change [table]: id, wine_name
+relations: 1
+  toy(pet_id) -> pet(id) inferred many-to-one
+engines: mysql, postgresql, sqlite, sqlserver
+warnings: 0

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Card geometry: given an entity, the column mode and the measurer, compute the card's size and the
  * vertical position of every visible row. Shared by the renderer (cards.ts), the edge router
  * (edges.ts) and the layout sizer so they always agree.
@@ -6,6 +6,7 @@
 
 import type { Column, Entity } from '../core/model';
 import { columnKeys, columnType } from '../core/format';
+import { clip } from './clip';
 import type { ColumnMode } from './types';
 import type { Measurer } from './measure';
 
@@ -19,6 +20,8 @@ export const MIN_W = 148;
 export const MAX_W = 360;
 export const COLLAPSE_LIMIT = 15;
 export const COLLAPSE_TO = 12;
+export { clip };
+
 
 export interface RowMetric {
   column: Column;
@@ -53,8 +56,8 @@ export function computeCardMetrics(
   expanded: boolean,
   m: Measurer,
 ): CardMetrics {
-  const header = entity.schema ? `${entity.name}` : entity.name;
-  const badge = entity.schema ?? '';
+  const header = clip(entity.name);
+  const badge = entity.schema ? clip(entity.schema, 20) : '';
   let width = m.ui(header, 'bold') + 22 /* kind icon */ + (badge ? m.ui(badge) + 14 : 0) + PAD_X * 2 + 12;
 
   let cols = visibleColumns(entity, mode);
@@ -68,8 +71,8 @@ export function computeCardMetrics(
   let y = HEADER_H;
   for (const c of cols) {
     const keys = columnKeys(c);
-    const nameW = m.ui(c.name);
-    const typeW = m.mono(columnType(c));
+    const nameW = m.ui(clip(c.name, 24));
+    const typeW = m.mono(clip(columnType(c), 14));
     const rowW = PAD_X + (keys.length ? KEY_COL_W : 0) + nameW + GAP + typeW + 16 + PAD_X;
     width = Math.max(width, rowW);
     rows.push({ column: c, top: y, centerY: y + ROW_H / 2, keys });

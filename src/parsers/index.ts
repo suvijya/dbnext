@@ -12,6 +12,7 @@ import { dbmlParser } from './dbml';
 import { dieselParser } from './diesel';
 import { djangoParser } from './django';
 import { doctrineParser } from './doctrine';
+import { doctrinemapParser } from './doctrinemap';
 import { drizzleParser } from './drizzle';
 import { ectoParser } from './ecto';
 import { efcoreParser } from './efcore';
@@ -19,6 +20,8 @@ import { engineDetector } from './engines';
 import { entParser } from './ent';
 import { exposedParser } from './exposed';
 import { gormParser } from './gorm';
+import { graphqlParser } from './graphql';
+import { hibernateParser } from './hibernate';
 import { jpaParser } from './jpa';
 import { knexParser } from './knex';
 import { kyselyParser } from './kysely';
@@ -26,6 +29,7 @@ import { laravelParser } from './laravel';
 import { liquibaseParser } from './liquibase';
 import { mikroormParser } from './mikroorm';
 import { mongooseParser } from './mongoose';
+import { mongovalidatorParser } from './mongovalidator';
 import { peeweeParser } from './peewee';
 import { prismaParser } from './prisma';
 import { railsParser } from './rails';
@@ -36,6 +40,7 @@ import { sqlalchemyParser } from './sqlalchemy';
 import { sqlmodelParser } from './sqlmodel';
 import { tortoiseParser } from './tortoise';
 import { typeormParser } from './typeorm';
+import { zmodelParser } from './zmodel';
 
 export const parsers: readonly SchemaParser[] = [
   // Schema languages and migrations
@@ -72,6 +77,12 @@ export const parsers: readonly SchemaParser[] = [
   jpaParser,
   exposedParser,
   efcoreParser,
+  // XML / YAML mappings, API schemas and validators
+  hibernateParser,
+  doctrinemapParser,
+  graphqlParser,
+  zmodelParser,
+  mongovalidatorParser,
 ];
 
 export const registry: ParserRegistry = { parsers, engines: engineDetector };

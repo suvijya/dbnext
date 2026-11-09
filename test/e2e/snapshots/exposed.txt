@@ -1,0 +1,89 @@
+entities: 54
+  "all_star_wars_films" [table]: id, sequel_id, name, director
+  actors [table]: id, firstname, lastname, sequel_id, name
+  actortoactors [table]: parent_node_id, child_user_id
+  all_star_wars_films [table]: id, sequel_id, name, director
+  basicenum [table]: enumOrdinal
+  brokers [table]: id, name, license_number
+  cities [table]: id, name
+  clients [table]: id, name, email, broker_id
+  comments [table]: id, issue_number, project_id, author_id, content, created_at, modified_at
+  directors [table]: id, name, genre, guild_id
+  directorscompositeid [table]: name, guild_id, genre
+  directorscustom [table]: id, name
+  directorswithguildref [table]: name, guild_id, genre
+  enum [table]: 
+  events [table]: id, name, start_date, start_time, created_at, last_modified, scheduled_at, period
+  existingenum [table]: 
+  files [table]: id, name, content, simple_data, thumbnail
+  filmboxoffice [table]: title, region, revenue, month, year
+  films [table]: id, title, rating, nominated
+  guildstable [table]: id
+  instrument_tags [table]: instrument_id, tag_id
+  instruments [table]: id, ticker, name, type
+  issues [table]: id, projectId, project_code, code, author_id, assignee_id, title, description, priority, state, watchers, upvotes, created_at, modified_at
+  javatimeevents [table]: id, name, start_date, start_time, created_at, last_modified, scheduled_at, period
+  jodatimeevents [table]: id, name, start_date, start_time, created_at, scheduled_at
+  json_cast [table]: project, project_text
+  messageentity [table]: id, text
+  messages [table]: id, text
+  namedenum [table]: enumName
+  newenum [table]: 
+  portfolios [table]: id, name, client_id, created_at
+  projects [table]: title, budget, created, id, name, code
+  roles [table]: id, sequel_id, actor_id, name
+  star_wars_films_table [table]: id, sequel_id, name, director
+  starwarsfilmactors [table]: starWarsFilm, actor
+  starwarsfilmrelations [table]: parent_film_id, child_film_id
+  starwarsfilms [table]: id, sequel_id, name, director, release_year, rating
+  starwarsfilmswithcompositeref [table]: id, sequel_id, name, director_name, director_guild_id
+  starwarsfilmswithdirector [table]: id, name, director
+  starwarsfilmswithrank [table]: id, sequel_id, name, rating, rank
+  tablewithtext [table]: id, text
+  tablewithunsignedinteger [table]: id, uint
+  tags [table]: id, name
+  tasks [table]: complete, project, id, name, description, completed
+  tasks_raw [table]: project
+  team [table]: group_id, project
+  team_projects [table]: memberIds, projects
+  teams [table]: memberIds, memberNames, budgets, deadlines, expenses, nestedMemberIds, hierarchicalMemberNames
+  test_table [table]: amount
+  trades [table]: id, client_id, instrument_id, portfolio_id, type, quantity, price, executed_at
+  userentity [table]: id, name, age
+  userratings [table]: id, value, film, user
+  userratingswithoptionaluser [table]: id, value, film, user
+  users [table]: id, name, cityId, bio, age, rating, is_active, first_name, email, avatar, password, full_name, username, settings
+relations: 31
+  actors(id) -> actors(id) orm many-to-many
+  actors(sequel_id) -> starwarsfilms(sequel_id) orm one-to-one
+  actortoactors(child_user_id) -> actors(id) orm many-to-one
+  actortoactors(parent_node_id) -> actors(id) orm many-to-one
+  clients(broker_id) -> brokers(id) orm many-to-one
+  comments(author_id) -> users(id) orm many-to-one
+  comments(project_id) -> projects(id) inferred many-to-one
+  directorswithguildref(guild_id) -> guildstable(id) orm many-to-one
+  instrument_tags(instrument_id) -> instruments(id) orm many-to-one
+  instrument_tags(tag_id) -> tags(id) orm many-to-one
+  instruments(id) -> tags(id) orm many-to-many
+  issues(assignee_id) -> users(id) orm many-to-one
+  issues(author_id) -> users(id) orm many-to-one
+  issues(projectId) -> projects(id) inferred many-to-one
+  portfolios(client_id) -> clients(id) orm many-to-one
+  roles(actor_id) -> actors(id) orm many-to-one
+  starwarsfilmactors(actor) -> actors(id) orm many-to-one
+  starwarsfilmactors(starWarsFilm) -> starwarsfilms(id,release_year) orm many-to-one
+  starwarsfilmrelations(child_film_id) -> starwarsfilmswithdirector(id) orm many-to-one
+  starwarsfilmrelations(parent_film_id) -> starwarsfilmswithdirector(id) orm many-to-one
+  starwarsfilms(id,release_year) -> actors(id) orm many-to-many
+  starwarsfilmswithdirector(director) -> directors(id,guild_id) orm many-to-one
+  starwarsfilmswithdirector(id) -> starwarsfilmswithdirector(id) orm many-to-many
+  trades(client_id) -> clients(id) orm many-to-one
+  trades(instrument_id) -> instruments(id) orm many-to-one
+  trades(portfolio_id) -> portfolios(id) orm many-to-one
+  userratings(film) -> starwarsfilms(id,release_year) orm many-to-one
+  userratings(user) -> users(id) orm many-to-one
+  userratingswithoptionaluser(film) -> starwarsfilms(id,release_year) orm many-to-one
+  userratingswithoptionaluser(user) -> users(id) orm many-to-one
+  users(cityId) -> cities(id) orm many-to-one
+engines: h2, mariadb, mysql, oracle, postgresql, sqlserver
+warnings: 0

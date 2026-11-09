@@ -1,0 +1,20 @@
+entities: 7
+  article_models [table]: id, created_at, updated_at, deleted_at, slug, title, description, body, author_id
+  article_user_models [table]: id, created_at, updated_at, deleted_at, user_model_id
+  comment_models [table]: id, created_at, updated_at, deleted_at, article_id, author_id, body
+  favorite_models [table]: id, created_at, updated_at, deleted_at, favorite_id, favorite_by_id
+  follow_models [table]: id, created_at, updated_at, deleted_at, following_id, followed_by_id
+  tag_models [table]: id, created_at, updated_at, deleted_at, tag
+  user_models [table]: id, username, email, bio, image, password
+relations: 9
+  article_models(author_id) -> article_user_models(id) orm many-to-one
+  article_models(id) -> tag_models(id) orm many-to-many
+  article_user_models(user_model_id) -> user_models(id) orm many-to-one
+  comment_models(article_id) -> article_models(id) orm many-to-one
+  comment_models(author_id) -> article_user_models(id) orm many-to-one
+  favorite_models(favorite_by_id) -> article_user_models(id) orm many-to-one
+  favorite_models(favorite_id) -> article_models(id) orm many-to-one
+  follow_models(followed_by_id) -> user_models(id) orm many-to-one
+  follow_models(following_id) -> user_models(id) orm many-to-one
+engines: sqlite
+warnings: 0

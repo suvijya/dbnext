@@ -1,0 +1,24 @@
+entities: 7
+  articlefavorites [table]: ArticleId, PersonId
+  articles [table]: ArticleId, Slug, Title, Description, Body, CreatedAt, UpdatedAt, AuthorId, AuthorPersonId
+  articletags [table]: ArticleId, TagId
+  comments [table]: CommentId, Body, AuthorId, ArticleId, CreatedAt, UpdatedAt
+  followedpeople [table]: ObserverId, TargetId
+  persons [table]: PersonId, Username, Email, Bio, Image, Hash, Salt
+  tags [table]: TagId
+relations: 13
+  articlefavorites(ArticleId) -> articles(ArticleId) foreign-key many-to-one
+  articlefavorites(PersonId) -> persons(PersonId) foreign-key many-to-one
+  articles(ArticleId) -> persons(PersonId) foreign-key many-to-many
+  articles(ArticleId) -> tags(TagId) foreign-key many-to-many
+  articles(AuthorId) -> persons(PersonId) orm many-to-one
+  articles(AuthorPersonId) -> persons(PersonId) foreign-key many-to-one
+  articletags(ArticleId) -> articles(ArticleId) foreign-key many-to-one
+  articletags(TagId) -> tags(TagId) foreign-key many-to-one
+  comments(ArticleId) -> articles(ArticleId) foreign-key many-to-one
+  comments(AuthorId) -> persons(PersonId) foreign-key many-to-one
+  followedpeople(ObserverId) -> persons(PersonId) foreign-key many-to-one
+  followedpeople(TargetId) -> persons(PersonId) foreign-key many-to-one
+  persons(PersonId) -> persons(PersonId) foreign-key many-to-many
+engines: sqlite, sqlserver
+warnings: 0
