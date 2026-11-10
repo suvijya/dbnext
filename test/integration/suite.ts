@@ -67,8 +67,15 @@ export async function run(): Promise<void> {
   await step('copies a Mermaid ER diagram to the clipboard', async () => {
     await vscode.env.clipboard.writeText('');
     await vscode.commands.executeCommand('dbnext.copyMermaid');
-    const text = await vscode.env.clipboard.readText();
-    assert.match(text, /^erDiagram/);
+    // The system clipboard is shared with the rest of the desktop and is written asynchronously:
+    // poll briefly instead of reading once.
+    let text = '';
+    for (let i = 0; i < 15; i++) {
+      text = await vscode.env.clipboard.readText();
+      if (text.startsWith('erDiagram')) break;
+      await sleep(200);
+    }
+    assert.match(text, /^erDiagram/, `clipboard held: ${JSON.stringify(text.slice(0, 80))}`);
     assert.match(text, /post }o--\|\| user/i);
   });
 

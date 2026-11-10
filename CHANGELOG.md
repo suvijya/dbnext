@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+- README corrected: the CLI is run from a clone of the repository (`node dist/cli.js scan <dir>`); it is not published to npm.
+- Documentation now covers all 33 supported technologies and the 0.2.0 features.
+- Refreshed screenshots, including the new schema diff view.
+- Prisma models without `@@map` are no longer flagged as 'Name guessed': Prisma maps them to the table of the same name.
+
 ## 0.2.0
 
 - New parsers: Hibernate XML mappings (`*.hbm.xml`), Doctrine XML/YAML mappings, GraphQL SDL (types with a

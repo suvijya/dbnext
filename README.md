@@ -1,10 +1,10 @@
 # DBNext – Database Map & ER Diagram
 
 **Open any repository and instantly see its databases.** DBNext scans the project, finds every
-schema definition (SQL, migrations and ORM models in 28 technologies), and draws an interactive
+schema definition (SQL, migrations and ORM models in 33 technologies), and draws an interactive
 entity-relationship map. You don't need a database connection or any configuration.
 
-![DB Map showing tables, relations and the details of the selected table](media/screenshot.png)
+![DB Map of a Prisma shop schema: the selected table's side panel shows notes, columns and how each relation was derived, with an inferred relation drawn dashed](media/screenshot.png)
 
 ## Features
 
@@ -22,13 +22,18 @@ entity-relationship map. You don't need a database connection or any configurati
   package and URL-scheme names are shown, never hosts, usernames or passwords, and real `.env` files
   are never opened.
 - **Sidebar tree.** Databases, tables, columns, relations and enums, with "Go to Definition".
+- **Shows its work.** For every table, column and relation the side panel and tooltips show how DBNext derived it (declared foreign key, ORM association, inferred from naming, guessed table name) and which files and lines it came from. Uncertain items are badged so you know what to double-check.
+- **Schema diff.** Compare the current schema with any branch, tag or commit and see added, removed and changed tables, columns and relations.
+- **Notes.** Add your own notes to tables and columns; they are saved in `.dbnext/notes.json` so the team can share them.
 - **Export.** Write a `DBMAP.md` with a Mermaid ER diagram that GitHub and GitLab render, copy the
-  Mermaid source, or save the diagram as SVG.
+  Mermaid, DBML or PlantUML source, or save the diagram as SVG or PNG.
 - **Live.** Edit a model or add a migration and the map updates.
 - **Large schemas.** 300+ tables lay out in well under a second; big schemas start with compact
   cards.
 
-![A 100-table schema focused on one table](media/screenshot-large.png)
+![The 100-table cal.com Prisma schema focused on the Booking table](media/screenshot-large.png)
+
+![Schema diff view: added, removed and changed tables, columns, relations and enums](media/screenshot-diff.png)
 
 ## Supported technologies
 
@@ -40,7 +45,7 @@ entity-relationship map. You don't need a database connection or any configurati
 | Python | Django, SQLAlchemy (incl. Flask-SQLAlchemy & Alembic), SQLModel, Peewee, Tortoise ORM |
 | Ruby / PHP / Elixir | Rails (`schema.rb`, migrations, models), Laravel (migrations & Eloquent), Doctrine, Ecto |
 | Go / Rust | GORM, Ent, Bun, SeaORM |
-| Mappings & API schemas | Hibernate XML (*.hbm.xml), Doctrine XML/YAML, GraphQL SDL (only types with a database directive such as @model), ZenStack schema.zmodel, MongoDB `` validators in createCollection |
+| Mappings & API schemas | Hibernate XML (*.hbm.xml), Doctrine XML/YAML, GraphQL SDL (only types with a database directive such as @model), ZenStack schema.zmodel, MongoDB `$jsonSchema` validators in `createCollection` |
 | JVM / .NET | JPA / Hibernate (Java & Kotlin), Exposed, Entity Framework Core (models, DbContext, migrations, snapshots) |
 
 ## Commands
@@ -76,13 +81,16 @@ Set `dbnext.liveDatabase.enabled` (machine scope, desktop only, off by default) 
 
 The same scanner is available as a CLI, e.g. to keep `DBMAP.md` up to date in CI:
 
+The CLI is not published to npm (the `dbnext` package name on npm belongs to an unrelated project, so do not run `npx dbnext`). Build it from a clone of this repository:
+
 ```sh
-npx dbnext scan . --out DBMAP.md                # Markdown + Mermaid (default)
-npx dbnext scan ./services/api --format dbml    # md | mermaid | dbml | plantuml | json
+git clone https://github.com/suvijya/dbnext && cd dbnext
+npm ci && npm run build:prod
+node dist/cli.js scan /path/to/project --out DBMAP.md           # Markdown + Mermaid (default)
+node dist/cli.js scan /path/to/project --format dbml            # md | mermaid | dbml | plantuml | json
 ```
 
-From a clone, build it with `npm run build:prod` and run `node dist/cli.js scan <dir>`. The CLI is not part of the
-extension package (`dist/cli.js` is excluded from the `.vsix`).
+`dist/cli.js` is not part of the extension package (`.vsix`).
 
 Keyboard shortcuts in the map: `+` / `-` zoom, `0` fit, `F` focus the selection, `Esc` clear,
 `Enter` / `Shift+Enter` cycle through search results, arrow keys move between connected tables.

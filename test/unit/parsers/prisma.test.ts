@@ -69,11 +69,11 @@ describe('prisma: models and columns', () => {
     expect(user.comment).toBe('A registered account.');
   });
 
-  it('derives table name from the model name (certainty 0) when no @@map', () => {
+  it('derives table name from the model name (certainty 2) when no @@map', () => {
     const r = parse(text);
     const post = r.entities.find((e) => e.modelName === 'Post')!;
     expect(post.name).toBe('Post');
-    expect(post.nameCertainty).toBe(0);
+    expect(post.nameCertainty).toBe(2);
   });
 
   it('applies @map, @db native types, @default and modifiers to columns', () => {

@@ -183,7 +183,8 @@ function parseModel(code: Code, b: Block, mongo: boolean): ParsedModel {
   const fields: FieldLine[] = [];
   const columnOf = new Map<string, string>();
   let tableName = b.name;
-  let nameCertainty: 0 | 2 = 0;
+  // Prisma maps a model without @@map to the table of exactly the same name (deterministic).
+  let nameCertainty: 0 | 2 = 2;
   let schema: string | undefined;
   let ignore = false;
   const idFields: string[] = [];

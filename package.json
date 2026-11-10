@@ -2,7 +2,7 @@
   "name": "dbnext",
   "displayName": "DBNext – Database Map & ER Diagram",
   "description": "Instantly understand any project's database. Auto-detects schemas from SQL, Prisma, TypeORM, Drizzle, Sequelize, Mongoose, Django, SQLAlchemy, Rails, Laravel, GORM, JPA/Hibernate, EF Core, Ecto and more, then draws an interactive ER map.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "suvijya",
   "license": "MIT",
   "icon": "media/icon.png",
